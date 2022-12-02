@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { motion, useAnimation, useScroll } from "framer-motion";
 import { Link, useMatch } from "react-router-dom";
 import styled from "styled-components";
 
 
-const Nav = styled.nav`
+const Nav = styled(motion.nav)`
 display: flex;
 justify-content: space-between;
 align-items: center;
@@ -91,6 +91,7 @@ svg {
     height: 25px;
   }
 position: relative;
+margin-right: 10px;
 `;
 
 
@@ -116,23 +117,83 @@ background-color: ${(props) => props.theme.red}
 const Input = styled(motion.input)`
 transform-origin: right center;
 position:absolute;
-right: 25px;
+right: 0px;
+color: white;
+font-size: 16px;
+border: 1px solid ${(props) => props.theme.white.lighter};
+padding: 5px 10px;
+padding-left: 30px;
+padding-right: 10px;
+width: 250px;
+background-color: transparent;
+z-index: -1;
 `;
 //transform-origin은 변화가 시작하는 위치
 function Header (){
     const homeMatch = useMatch("/");
     const tvMatch = useMatch("/tv");
     //console.log(homeMatch, tvMatch)
+    const {scrollY,scrollYProgress} = useScroll();
+    // Progress는 얼마나 떨어져있는지 0%~100%의 사이 값으로 나타냄
+// --------------------------------------------------------------------
 
-   // --------------------------------------------------------------------
-   
-   
+
+const inputAnimation = useAnimation();
+// 코드를 통해 애니메이션을 실행시키고 싶을때 사용
+// 즉, 애니메이션을 동시에 실행시키고 싶을때 유용
+const navAnimation = useAnimation();
+
+// --------------------------------------------------------------------
+
+const navVariants = {
+  top: {
+    backgroundColor:"rgba(0,0,0,1)"
+  },
+  scroll: {
+    backgroundColor:"rgba(0,0,0,0)"
+  }
+}
+
+// --------------------------------------------------------------------
+
+
 const [searchOpen, setSearchOpen] = useState(false);
-const openSearch = () => setSearchOpen((current) => !current);
+const openSearch = () => {
+  if(searchOpen){
+    inputAnimation.start({
+      scaleX:0,
+    });
+  }
+  else {
+    inputAnimation.start({
+      scaleX:1,
+    });
+  }
+  setSearchOpen((current) => !current);}
+
+// --------------------------------------------------------------------
+
+useEffect(()=>{
+scrollY.onChange(()=>{
+/*console.log(scrollY.get())*/
+if(scrollY.get() > 80){
+  navAnimation.start("scroll")
+}
+else{
+  navAnimation.start("top")
+}
+})
+},[scrollY, navAnimation])
+
+
 
 
     return (
-    <Nav>
+    <Nav 
+    variants={navVariants}
+    initial={"top"}
+    animate={navAnimation}
+    >
     <Col>
     <Logo
     xmlns="http://www.w3.org/2000/svg"
@@ -164,6 +225,7 @@ const openSearch = () => setSearchOpen((current) => !current);
     <Col>
     <Search>
           <motion.svg
+          style={{marginRight: "20px"}}
           onClick={openSearch}
           animate={{x:searchOpen ? -200 : 0}}
           transition={{type:"linear"}}
@@ -178,9 +240,10 @@ const openSearch = () => setSearchOpen((current) => !current);
             ></path>
           </motion.svg>
           <Input
+          initial={{scaleX: 0}}
           transition={{type:"linear"}}
-          animate={{scaleX: searchOpen ? 1 : 0}}
-           placeholder="Search for movie or tv show.." />
+          animate={inputAnimation}
+          placeholder="Search for movie or tv show.." />
         </Search>
     </Col>
     </Nav>
