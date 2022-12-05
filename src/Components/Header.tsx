@@ -220,6 +220,10 @@ else{
             <Link to="/tv">
             <Item>Tv Shows{tvMatch ? <Circle layoutId="circle"/>:null}</Item>
             </Link>
+            {/*
+            layoutId는 서로 다른 컴포넌트를 연결하고 그 두 컴포넌트를 
+            애니메이션으로 연결할 수 있게 해주는 도구이다 
+            */}
         </Items>
     </Col>
     <Col>
