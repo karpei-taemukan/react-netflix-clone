@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { click } from "@testing-library/user-event/dist/click";
+import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
 import { useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -129,7 +130,7 @@ const infoVars = {
     },
 }
 
-const Thumb = styled(motion.div)`
+/*const Thumb = styled(motion.div)`
 display: flex;
 justify-content: space-around;
 align-items: center;
@@ -143,9 +144,52 @@ height: 30px;
 const Dislike = styled(motion.svg)`
 width: 30px;
 height: 30px;
-`
+`*/
 //--------------------------------------------------------------------
 
+
+const Overlay = styled(motion.div)`
+position: fixed;
+top:0;
+width:100%;
+height:100%;
+background-color: rgba(0,0,0,0.5);
+`;
+
+const BigMovie = styled(motion.div)`
+position: absolute;
+width: 50vw;
+height: 80vh;
+left: 0;
+right: 0;
+margin: 0 auto;
+border-radius: 15px;
+background-color: ${(props) => props.theme.black.lighter};
+`;
+
+
+//--------------------------------------------------------------------
+
+
+const BigCover = styled.div`
+width: 50vw;
+height: 50vh;
+background-size: cover;
+background-position: center center;
+`;
+
+const BigTitle = styled.h2`
+color: ${(props) => props.theme.white.lighter};
+padding: 10px;
+position: relative;
+top: -80px;
+font-size: 30px;
+`;
+
+const BigOverview = styled.p`
+padding: 10px;
+color: ${(props) => props.theme.white.lighter};
+`;
 
 function Home(){
     const offset = 6;
@@ -155,6 +199,7 @@ const navigate  = useNavigate();
 const bigMovieMatch = useMatch("/movies/:movieId");
 //console.log(bigMovieMatch)
 
+const {scrollY} = useScroll();
     const {data, isLoading} = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"], 
     getMovies);
@@ -203,8 +248,15 @@ end: {
 const toggleDislikethumb = () => {
     setDislikethumb(current => !current);
 }*/}
+
 //--------------------------------------------------------------------
 
+
+const onOverlayClick = () => {
+navigate(-1);
+}
+const clickedMovie = bigMovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === bigMovieMatch.params.movieId)
+console.log(clickedMovie);
 
 
 
@@ -286,12 +338,31 @@ const toggleDislikethumb = () => {
             </AnimatePresence>
         </Slider>
         <AnimatePresence>
-            {bigMovieMatch ? 
-            <motion.div
-            layoutId={bigMovieMatch.params.movieId}
-             style={{backgroundColor:"red",
-            top:50, left:0, right: 0, margin: "0 auto",
-           position:"absolute", width:"40vw", height:"80vh"}}></motion.div> : null}
+            {bigMovieMatch ? (<>
+            <Overlay
+            onClick={onOverlayClick}
+            animate={{opacity: 1}}
+            exit={{
+                opacity: 0
+            }}
+            />
+            <BigMovie
+            style={{top:scrollY.get()+100, bottom: scrollY.get()+100}}
+            layoutId={bigMovieMatch.params.movieId}>
+            {clickedMovie && 
+            <>
+            <BigCover
+             style={{
+        backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
+        clickedMovie.backdrop_path,
+        "w500")})`,}} />
+            <BigTitle>{clickedMovie.title}</BigTitle>
+            <BigOverview>{clickedMovie.overview}</BigOverview>
+            </> }
+            </BigMovie>
+           </>) : null}
+
+           {/* <></> (fragment)를 쓰는 이유는 서로 붙어있지만 분리된 컴포넌트를 반환하기 위해서이다 */}
         </AnimatePresence>
 </Wrapper>
 )}
