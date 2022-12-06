@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { motion, useAnimation, useScroll } from "framer-motion";
-import { Link, useMatch } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useForm } from "react-hook-form";
 
 
 const Nav = styled(motion.nav)`
@@ -83,7 +84,7 @@ flex-direction: column;
 // --------------------------------------------------------------------
 
 
-const Search = styled.span`
+const Search = styled.form`
 color: white;
 display: flex;
 align-items: center;
@@ -135,6 +136,8 @@ function Header (){
     //console.log(homeMatch, tvMatch)
     const {scrollY,scrollYProgress} = useScroll();
     // Progress는 얼마나 떨어져있는지 0%~100%의 사이 값으로 나타냄
+
+    const navigate = useNavigate();
 // --------------------------------------------------------------------
 
 
@@ -186,8 +189,19 @@ else{
 },[scrollY, navAnimation])
 
 
+// --------------------------------------------------------------------
 
+interface IForm{
+  keyword: string;
+}
 
+const {register, handleSubmit, setValue } = useForm<IForm>();
+
+const onValid = (data:IForm) => {
+console.log(data);
+navigate(`/search?keyword=${data.keyword}`)
+}
+setValue("keyword", "");
     return (
     <Nav 
     variants={navVariants}
@@ -227,7 +241,7 @@ else{
         </Items>
     </Col>
     <Col>
-    <Search>
+    <Search onSubmit={handleSubmit(onValid)}>
           <motion.svg
           style={{marginRight: "20px"}}
           onClick={openSearch}
@@ -244,6 +258,7 @@ else{
             ></path>
           </motion.svg>
           <Input
+          {...register("keyword", {required: true, minLength:2,})}
           initial={{scaleX: 0}}
           transition={{type:"linear"}}
           animate={inputAnimation}
