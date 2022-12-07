@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
 import { useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getMovies, IGetMoviesResult } from "../api";
+import { getMovies, getPopularMovies, IGetMoviesResult } from "../api";
 import { makeImagePath } from "../untills";
 
 const Wrapper = styled.div`
@@ -84,8 +84,6 @@ const rowVars = {
     },
 }
 
-//--------------------------------------------------------------------
-
 const boxVars = {
     normal:{
         scale: 1,
@@ -131,6 +129,9 @@ const infoVars = {
 }
 
 
+
+
+
 //--------------------------------------------------------------------
 
 
@@ -151,6 +152,7 @@ right: 0;
 margin: 0 auto;
 border-radius: 15px;
 background-color: ${(props) => props.theme.black.lighter};
+z-index:99;
 `;
 
 
@@ -177,13 +179,66 @@ padding: 10px;
 color: ${(props) => props.theme.white.lighter};
 `;
 
+
+//--------------------------------------------------------------------
+
+
+const FirstSlider = styled.h3`
+padding: 10px;
+margin-bottom: 100px;
+font-size: 40px;
+`;
+
+const SecondSlider = styled.h3`
+font-size: 40px;
+margin-top: 200px;
+padding: 10px;
+margin-bottom: 10px;
+`;
+
+
+//--------------------------------------------------------------------
+
+const PopularSlider = styled(motion.div)`
+position:relative;
+top: -5px;
+`;
+
+const PopularRow = styled(motion.div)`
+display: grid;
+grid-template-columns: repeat(6,1fr);
+gap: 5px;
+position:absolute;
+width:100%;
+`;
+
+const PopularBox = styled(motion.div)<{bgphoto:string}>`
+background-color: white;
+background-image: url(${(props) => props.bgphoto});
+height: 200px;
+color:red;
+background-size: cover;
+background-position: center center;
+cursor: pointer;
+&:first-child{
+    transform-origin: center left;
+};
+&:last-child{
+    transform-origin: center right;
+};
+`;
+
+
+
 function Home(){
     const offset = 6;
 
 //--------------------------------------------------------------------    
 const navigate  = useNavigate();
-const bigMovieMatch = useMatch("/movies/:movieId");
-//console.log(bigMovieMatch)
+const Now_Playing_MovieMatch = useMatch("/movies/:movieId");
+//console.log(Now_Playing_MovieMatch)
+const Popular_MovieMatch = useMatch("/movies/popular/:movieId");
+
 
 const {scrollY} = useScroll();
     const {data, isLoading} = useQuery<IGetMoviesResult>(
@@ -191,10 +246,14 @@ const {scrollY} = useScroll();
     getMovies);
 // console.log(data, isLoading);
 
+const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
+    ["movies", "popular"], getPopularMovies);  
+console.log(popularData, popularLoading);
 //--------------------------------------------------------------------
 
 const [index,setIndex] = useState(0);
 const [leaving, setLeaving] = useState(false);
+const [popindex,setpopIndex] = useState(0);
 
 
 //--------------------------------------------------------------------
@@ -207,15 +266,31 @@ const increaseIndex = () => {
     setIndex(current => current === maxIndex ? 0 : current+1)
     }
 };
+
+const popularIndex = () => {
+    if(popularData){
+        if(leaving) return;
+        toggleLeaving();
+        const totalMovies = popularData?.results.length - 1;
+        const maxIndex = Math.floor(totalMovies/offset) - 1;
+        setpopIndex(current => current === maxIndex ? 0 : current+1)
+        }
+}
+
 const toggleLeaving = () => {
     setLeaving(current => !current);
 };
 
+//--------------------------------------------------------------------
 
-const onBoxCliked = (movieId:number) => {
+
+const Now_playing_BoxCliked = (movieId:number) => {
 navigate(`/movies/${movieId}`)
 }
 
+const Popular_BoxCliked = (movieId:number) => {
+    navigate(`/movies/popular/${movieId}`)
+    }
 
 
 //--------------------------------------------------------------------
@@ -224,10 +299,11 @@ navigate(`/movies/${movieId}`)
 const onOverlayClick = () => {
 navigate(-1);
 }
-const clickedMovie = bigMovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === bigMovieMatch.params.movieId)
+const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
 console.log(clickedMovie);
 
-
+const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.movieId)
+console.log(clickedPopularMovie);
 
     return (
     <Wrapper>
@@ -235,7 +311,7 @@ console.log(clickedMovie);
         <Loader>Loading...</Loader> 
         :
         <>
-        <Banner onClick={increaseIndex}
+        <Banner
         bgphoto={makeImagePath(data?.results[0].backdrop_path || "")}>
            {/* || ""(fallback) 쓴 이유는 
            data가 정의 되지않거나 api에서 data가 안옴 방지 */}
@@ -244,6 +320,9 @@ console.log(clickedMovie);
         </Banner>
         </>}
         {/* <></>는 공통된 부모없이 연이어서 리턴할수있는 방법 */}
+
+
+        <FirstSlider onClick={increaseIndex}>Now Playing</FirstSlider>
         <Slider>
             <AnimatePresence 
             initial={false}
@@ -262,7 +341,7 @@ console.log(clickedMovie);
             .map((movie)=>
             <Box 
             layoutId={movie.id+""}
-            onClick={() => onBoxCliked(movie.id)}
+            onClick={() => Now_playing_BoxCliked(movie.id)}
             variants={boxVars}
             initial="normal"
             key={movie.id}
@@ -291,7 +370,7 @@ console.log(clickedMovie);
             </AnimatePresence>
         </Slider>
         <AnimatePresence>
-            {bigMovieMatch ? (<>
+            {Now_Playing_MovieMatch ? (<>
             <Overlay
             onClick={onOverlayClick}
             animate={{opacity: 1}}
@@ -301,7 +380,7 @@ console.log(clickedMovie);
             />
             <BigMovie
             style={{top:scrollY.get()+100, bottom: scrollY.get()+100}}
-            layoutId={bigMovieMatch.params.movieId}>
+            layoutId={Now_Playing_MovieMatch.params.movieId}>
             {clickedMovie && 
             <>
             <BigCover
@@ -318,6 +397,74 @@ console.log(clickedMovie);
 
            {/* <></> (fragment)를 쓰는 이유는 서로 붙어있지만 분리된 컴포넌트를 반환하기 위해서이다 */}
         </AnimatePresence>
+
+
+
+        <SecondSlider onClick={popularIndex}>Popular</SecondSlider>
+        <PopularSlider>
+            <AnimatePresence 
+            initial={false}
+            onExitComplete={toggleLeaving}
+            >
+     
+            <PopularRow variants={rowVars}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{type:"tween", duration: 1}}
+            key={popindex}>
+            {popularData?.results
+            .slice(offset*popindex, offset*popindex+offset)
+            .map((movie)=>
+            <PopularBox 
+            layoutId={movie.id+""}
+            onClick={() => Popular_BoxCliked(movie.id)}
+            variants={boxVars}
+            initial="normal"
+            key={movie.id}
+            whileHover="hover"
+            transition={{type: "tween"}}
+            bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+            >
+   
+            <Info variants={infoVars}><h4>{movie.title}</h4>
+            </Info>
+            
+            </PopularBox>
+            
+            )}
+
+            </PopularRow>
+            </AnimatePresence>
+        </PopularSlider>
+
+    <AnimatePresence>
+            {Popular_MovieMatch ? (<>
+            <Overlay
+            onClick={onOverlayClick}
+            animate={{opacity: 1}}
+            exit={{
+                opacity: 0
+            }}
+            />
+            <BigMovie
+            style={{top:scrollY.get()+100, bottom: scrollY.get()+100}}
+            layoutId={Popular_MovieMatch.params.movieId}>
+            {clickedPopularMovie && 
+            <>
+            <BigCover
+             style={{
+        backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
+        clickedPopularMovie.backdrop_path,
+        "w500")})`,}} />
+            <BigTitle>{clickedPopularMovie.title}</BigTitle>
+            <BigOverview>{clickedPopularMovie.overview}</BigOverview>
+           
+            </> }
+            </BigMovie>
+           </>) : null}
+        </AnimatePresence>
+ 
 </Wrapper>
 )}
 
