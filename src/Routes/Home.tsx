@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
-import { useMatch, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails } from "../api";
 import { makeImagePath } from "../untills";
@@ -243,8 +243,11 @@ const navigate  = useNavigate();
 const Now_Playing_MovieMatch = useMatch("/movies/:movieId");
 //console.log(Now_Playing_MovieMatch)
 const Popular_MovieMatch = useMatch("/movies/popular/:movieId");
-const {id} = useParams();
-console.log(id);
+const id = useParams();
+//console.log(id.movieId);
+
+const movieId = Number(id.movieId);
+
 
 const Video_MovieMatch = useMatch("/movies/:movieId/videos");
 //console.log(Video_MovieMatch)
@@ -260,8 +263,8 @@ const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
     ["movies", "popular"], getPopularMovies);  
 //console.log(popularData, popularLoading);
 
-//const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["movies","smallVideo"], ()=>Now_Playing_MovieDetails()))
-//console.log(detailNow_Video);
+const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["movies","smallVideo"], ()=>Now_Playing_MovieDetails(movieId))
+console.log(detailNow_Video);
 //--------------------------------------------------------------------
 
 

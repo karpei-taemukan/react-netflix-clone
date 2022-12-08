@@ -41,13 +41,9 @@ export function getPopularMovies(){
     return fetch(`${BASE_PATH}/movie/popular?api_key=${API_KEY}&language=en-US&page=2`).then(res=>res.json());
 }
 
-export function Now_Playing_MovieDetails(arr:number|undefined){
-const Now_Playing_MovieMatch = useMatch("/movies/:movieId");
+export function Now_Playing_MovieDetails(movieId:number){
 
-
-const MOVIE_ID = Now_Playing_MovieMatch?.params.movieId;
-
-return fetch(`${BASE_PATH}/movie/${MOVIE_ID}/videos?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
+return fetch(`${BASE_PATH}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
 }
 
 export function Popular_MovieDetails(){
