@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { click } from "@testing-library/user-event/dist/click";
 import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
-import { useMatch, useNavigate } from "react-router-dom";
+import { useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { getMovies, getPopularMovies, IGetMoviesResult } from "../api";
+import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails } from "../api";
 import { makeImagePath } from "../untills";
 
 const Wrapper = styled.div`
@@ -179,7 +178,13 @@ padding: 10px;
 color: ${(props) => props.theme.white.lighter};
 `;
 
-
+const BigVideo = styled.h1`
+width: 100%;
+height: 100%;
+font-size: 200px;
+position: absolute;
+top: 200%;
+`;
 //--------------------------------------------------------------------
 
 
@@ -231,30 +236,47 @@ cursor: pointer;
 
 
 function Home(){
-    const offset = 6;
+const offset = 6;
 
 //--------------------------------------------------------------------    
 const navigate  = useNavigate();
 const Now_Playing_MovieMatch = useMatch("/movies/:movieId");
 //console.log(Now_Playing_MovieMatch)
 const Popular_MovieMatch = useMatch("/movies/popular/:movieId");
+const {id} = useParams();
+console.log(id);
 
+const Video_MovieMatch = useMatch("/movies/:movieId/videos");
+//console.log(Video_MovieMatch)
 
 const {scrollY} = useScroll();
     const {data, isLoading} = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"], 
     getMovies);
-// console.log(data, isLoading);
+    //console.log(data, isLoading);
+
 
 const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
     ["movies", "popular"], getPopularMovies);  
-console.log(popularData, popularLoading);
+//console.log(popularData, popularLoading);
+
+//const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["movies","smallVideo"], ()=>Now_Playing_MovieDetails()))
+//console.log(detailNow_Video);
 //--------------------------------------------------------------------
+
 
 const [index,setIndex] = useState(0);
 const [leaving, setLeaving] = useState(false);
 const [popindex,setpopIndex] = useState(0);
 
+//--------------------------------------------------------------------
+
+const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
+//console.log(clickedMovie);
+//console.log(Now_Playing_MovieMatch?.params.movieId);
+const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.movieId)
+//console.log(clickedPopularMovie);
+//console.log(Popular_MovieMatch?.params.movieId);
 
 //--------------------------------------------------------------------
 const increaseIndex = () => {
@@ -291,19 +313,18 @@ navigate(`/movies/${movieId}`)
 const Popular_BoxCliked = (movieId:number) => {
     navigate(`/movies/popular/${movieId}`)
     }
-
-
+const Video_Cliked = (movieId:number) => {
+        navigate(`/movies/${movieId}/videos`)
+}
 //--------------------------------------------------------------------
 
 
 const onOverlayClick = () => {
 navigate(-1);
 }
-const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
-console.log(clickedMovie);
 
-const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.movieId)
-console.log(clickedPopularMovie);
+
+
 
     return (
     <Wrapper>
@@ -390,7 +411,6 @@ console.log(clickedPopularMovie);
         "w500")})`,}} />
             <BigTitle>{clickedMovie.title}</BigTitle>
             <BigOverview>{clickedMovie.overview}</BigOverview>
-           
             </> }
             </BigMovie>
            </>) : null}
@@ -464,7 +484,7 @@ console.log(clickedPopularMovie);
             </BigMovie>
            </>) : null}
         </AnimatePresence>
- 
+
 </Wrapper>
 )}
 
