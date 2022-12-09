@@ -25,11 +25,14 @@ total_pages: number,
 total_results: number
 }
 
+interface IMoiveDetail {
+    key: string,
+}
 
 export interface IMovieDetailsVideo {
-    results:[{
-        key: string
-    }]
+    id: number,
+    key: string,
+    results: IMoiveDetail[] // 따로 작성하는 이유는 results가 여러개이기 때문이다
 }
 
 export function getMovies(){

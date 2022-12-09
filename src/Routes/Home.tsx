@@ -1,10 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
+import { QueryClient } from "@tanstack/react-query";
 import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails } from "../api";
 import { makeImagePath } from "../untills";
+import ReactPlayer from "react-player/lazy";
+
 
 const Wrapper = styled.div`
 background: black;
@@ -178,13 +181,9 @@ padding: 10px;
 color: ${(props) => props.theme.white.lighter};
 `;
 
-const BigVideo = styled.h1`
-width: 100%;
-height: 100%;
-font-size: 200px;
-position: absolute;
-top: 200%;
-`;
+const BigVideo = styled.video`
+`
+
 //--------------------------------------------------------------------
 
 
@@ -237,34 +236,42 @@ cursor: pointer;
 
 function Home(){
 const offset = 6;
-
 //--------------------------------------------------------------------    
 const navigate  = useNavigate();
 const Now_Playing_MovieMatch = useMatch("/movies/:movieId");
 //console.log(Now_Playing_MovieMatch)
 const Popular_MovieMatch = useMatch("/movies/popular/:movieId");
-const id = useParams();
-//console.log(id.movieId);
-
-const movieId = Number(id.movieId);
 
 
 const Video_MovieMatch = useMatch("/movies/:movieId/videos");
 //console.log(Video_MovieMatch)
 
 const {scrollY} = useScroll();
-    const {data, isLoading} = useQuery<IGetMoviesResult>(
-    ["movies", "nowPlaying"], 
-    getMovies);
-    //console.log(data, isLoading);
+
+
+const {data, isLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies);
+//console.log(data, isLoading);
 
 
 const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
     ["movies", "popular"], getPopularMovies);  
 //console.log(popularData, popularLoading);
 
-const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["movies","smallVideo"], ()=>Now_Playing_MovieDetails(movieId))
-console.log(detailNow_Video);
+const id = useParams();
+//console.log(id)
+
+const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
+//console.log(clickedMovie);
+//console.log(Now_Playing_MovieMatch?.params.movieId);
+
+const movieId = Number(id.movieId);
+
+const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["movies","smallVideo"], 
+()=>Now_Playing_MovieDetails(movieId),
+{enabled: !!movieId} // movieId가 존재할때까지 쿼리를 실행하지 않는다
+)
+console.log(detailNow_Video?.results.length);
+
 //--------------------------------------------------------------------
 
 
@@ -274,9 +281,6 @@ const [popindex,setpopIndex] = useState(0);
 
 //--------------------------------------------------------------------
 
-const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
-//console.log(clickedMovie);
-//console.log(Now_Playing_MovieMatch?.params.movieId);
 const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.movieId)
 //console.log(clickedPopularMovie);
 //console.log(Popular_MovieMatch?.params.movieId);
@@ -325,7 +329,6 @@ const Video_Cliked = (movieId:number) => {
 const onOverlayClick = () => {
 navigate(-1);
 }
-
 
 
 
@@ -413,6 +416,18 @@ navigate(-1);
         clickedMovie.backdrop_path,
         "w500")})`,}} />
             <BigTitle>{clickedMovie.title}</BigTitle>
+         { detailNow_Video?.results.length !== 0 ? 
+         <ReactPlayer
+         className="react-player"
+         url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[1].key}`}
+         width="200px"
+         height="200px"
+         playing={true}
+         muted={true}
+         controls={true}
+         light={true}
+         poster={makeImagePath(data?.results[0].backdrop_path || "")}/>
+         : null }
             <BigOverview>{clickedMovie.overview}</BigOverview>
             </> }
             </BigMovie>
@@ -482,7 +497,7 @@ navigate(-1);
         "w500")})`,}} />
             <BigTitle>{clickedPopularMovie.title}</BigTitle>
             <BigOverview>{clickedPopularMovie.overview}</BigOverview>
-           
+      
             </> }
             </BigMovie>
            </>) : null}
