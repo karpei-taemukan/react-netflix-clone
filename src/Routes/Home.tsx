@@ -6,7 +6,7 @@ import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components";
 import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails } from "../api";
 import { makeImagePath } from "../untills";
-import ReactPlayer from "react-player/lazy";
+import ReactPlayer from "react-player";
 
 
 const Wrapper = styled.div`
@@ -148,7 +148,7 @@ background-color: rgba(0,0,0,0.5);
 const BigMovie = styled(motion.div)`
 position: absolute;
 width: 50vw;
-height: 80vh;
+height: 120vh;
 left: 0;
 right: 0;
 margin: 0 auto;
@@ -181,9 +181,33 @@ padding: 10px;
 color: ${(props) => props.theme.white.lighter};
 `;
 
-const BigVideo = styled.video`
-`
+const BigVideo = styled.div`
+display: flex;
+justify-content: center;
+margin-top: -180px;
+margin-left: 80px;
+`;
 
+const BigDate = styled.h3`
+font-size: 20px;
+padding: 10px;
+`;
+
+const BigVote = styled.h3`
+font-size: 20px;
+padding: 10px;
+`;
+
+const UnpreparedPreview = styled.h2`
+font-size: 36px;
+text-align: center;
+margin-top: -40px;
+`;
+const UnpreparedOverview = styled.h2`
+font-size: 36px;
+text-align: center;
+margin-top: 50px;
+`;
 //--------------------------------------------------------------------
 
 
@@ -261,7 +285,7 @@ const id = useParams();
 //console.log(id)
 
 const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
-//console.log(clickedMovie);
+console.log(clickedMovie);
 //console.log(Now_Playing_MovieMatch?.params.movieId);
 
 const movieId = Number(id.movieId);
@@ -270,7 +294,7 @@ const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetai
 ()=>Now_Playing_MovieDetails(movieId),
 {enabled: !!movieId} // movieId가 존재할때까지 쿼리를 실행하지 않는다
 )
-console.log(detailNow_Video?.results.length);
+//console.log(detailNow_Video);
 
 //--------------------------------------------------------------------
 
@@ -374,8 +398,9 @@ navigate(-1);
             key={movie.id}
             whileHover="hover"
             transition={{type: "tween"}}
-            bgphoto={makeImagePath(movie.backdrop_path, "w500")}
-            >
+            bgphoto={
+                makeImagePath(movie.poster_path, "w500")}
+            > 
    
             <Info variants={infoVars}><h4>{movie.title}</h4>
             </Info>
@@ -413,23 +438,33 @@ navigate(-1);
             <BigCover
              style={{
         backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
-        clickedMovie.backdrop_path,
+        clickedMovie.poster_path,
         "w500")})`,}} />
             <BigTitle>{clickedMovie.title}</BigTitle>
-         { detailNow_Video?.results.length !== 0 ? 
+            <h2 style={{padding: "10px"}}>Release_Date:</h2>
+            <BigDate>{clickedMovie.release_date}</BigDate>
+            <h2 style={{padding: "10px"}}>Vote_Average:</h2>
+        <BigVote>{clickedMovie.vote_average}</BigVote>
+        { detailNow_Video?.results.length !== 0 ? 
+        <BigVideo>
          <ReactPlayer
+         url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
          className="react-player"
-         url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[1].key}`}
-         width="200px"
+         width="300px"
          height="200px"
          playing={true}
-         muted={true}
+         muted={false}
          controls={true}
          light={true}
-         poster={makeImagePath(data?.results[0].backdrop_path || "")}/>
-         : null }
-            <BigOverview>{clickedMovie.overview}</BigOverview>
-            </> }
+         sandbox="allow-presentation"
+         />
+         </BigVideo>
+         : <UnpreparedPreview>Preview is coming soon...</UnpreparedPreview> } 
+            {clickedMovie.overview !== "" ? <BigOverview>{clickedMovie.overview}</BigOverview>
+            : <UnpreparedOverview>OverView is coming soon...</UnpreparedOverview>
+        }
+            </>  }
+    
             </BigMovie>
            </>) : null}
 
@@ -462,7 +497,7 @@ navigate(-1);
             key={movie.id}
             whileHover="hover"
             transition={{type: "tween"}}
-            bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+            bgphoto={makeImagePath(movie.poster_path, "w500")}
             >
    
             <Info variants={infoVars}><h4>{movie.title}</h4>
