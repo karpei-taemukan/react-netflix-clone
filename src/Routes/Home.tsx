@@ -1,10 +1,10 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
-import { QueryClient } from "@tanstack/react-query";
 import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails } from "../api";
+import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails,Popular_MovieDetails } from "../api";
 import { makeImagePath } from "../untills";
 import ReactPlayer from "react-player";
 
@@ -174,11 +174,14 @@ padding: 10px;
 position: relative;
 top: -80px;
 font-size: 30px;
+font-family: system-ui;
 `;
 
 const BigOverview = styled.p`
 padding: 10px;
 color: ${(props) => props.theme.white.lighter};
+line-height: 2.5;
+font-family: Georgia, serif;
 `;
 
 const BigVideo = styled.div`
@@ -191,11 +194,13 @@ margin-left: 80px;
 const BigDate = styled.h3`
 font-size: 20px;
 padding: 10px;
+font-family: cursive;
 `;
 
 const BigVote = styled.h3`
 font-size: 20px;
 padding: 10px;
+font-family: cursive;
 `;
 
 const UnpreparedPreview = styled.h2`
@@ -285,16 +290,27 @@ const id = useParams();
 //console.log(id)
 
 const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
-console.log(clickedMovie);
+//console.log(clickedMovie);
 //console.log(Now_Playing_MovieMatch?.params.movieId);
+
+const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.movieId)
+//console.log(clickedPopularMovie);
+//console.log(Popular_MovieMatch?.params.movieId);
 
 const movieId = Number(id.movieId);
 
-const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["movies","smallVideo"], 
+const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["smallVideo","nowDetail"], 
 ()=>Now_Playing_MovieDetails(movieId),
 {enabled: !!movieId} // movieId가 존재할때까지 쿼리를 실행하지 않는다
-)
+);
 //console.log(detailNow_Video);
+
+const {data:detailPopular_Video, isLoading:detailPopular_loading} = useQuery<IMovieDetailsVideo>(["smallVideo", "popularDetail"],
+()=>Popular_MovieDetails(movieId),
+{enabled: !!movieId}
+);
+
+//console.log(detailPopular_Video)
 
 //--------------------------------------------------------------------
 
@@ -305,9 +321,6 @@ const [popindex,setpopIndex] = useState(0);
 
 //--------------------------------------------------------------------
 
-const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.movieId)
-//console.log(clickedPopularMovie);
-//console.log(Popular_MovieMatch?.params.movieId);
 
 //--------------------------------------------------------------------
 const increaseIndex = () => {
@@ -344,9 +357,7 @@ navigate(`/movies/${movieId}`)
 const Popular_BoxCliked = (movieId:number) => {
     navigate(`/movies/popular/${movieId}`)
     }
-const Video_Cliked = (movieId:number) => {
-        navigate(`/movies/${movieId}/videos`)
-}
+
 //--------------------------------------------------------------------
 
 
@@ -456,7 +467,7 @@ navigate(-1);
          muted={false}
          controls={true}
          light={true}
-         sandbox="allow-presentation"
+         sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation allow-presentation"
          />
          </BigVideo>
          : <UnpreparedPreview>Preview is coming soon...</UnpreparedPreview> } 
@@ -531,9 +542,30 @@ navigate(-1);
         clickedPopularMovie.backdrop_path,
         "w500")})`,}} />
             <BigTitle>{clickedPopularMovie.title}</BigTitle>
-            <BigOverview>{clickedPopularMovie.overview}</BigOverview>
-      
-            </> }
+            <h2 style={{padding: "10px"}}>Release_Date:</h2>
+            <BigDate>{clickedPopularMovie.release_date}</BigDate>
+            <h2 style={{padding: "10px"}}>Vote_Average:</h2>
+        <BigVote>{clickedPopularMovie.vote_average}</BigVote>
+        { detailNow_Video?.results.length !== 0 ? 
+        <BigVideo>
+         <ReactPlayer
+         url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
+         className="react-player"
+         width="300px"
+         height="200px"
+         playing={true}
+         muted={false}
+         controls={true}
+         light={true}
+         sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation allow-presentation"
+         />
+         </BigVideo>
+         : <UnpreparedPreview>Preview is coming soon...</UnpreparedPreview> }
+
+        {clickedPopularMovie.overview !== "" ? <BigOverview>{clickedPopularMovie.overview}</BigOverview>
+            : <UnpreparedOverview>OverView is coming soon...</UnpreparedOverview>
+        }
+        </>}
             </BigMovie>
            </>) : null}
         </AnimatePresence>
