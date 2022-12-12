@@ -152,8 +152,8 @@ height: 120vh;
 left: 0;
 right: 0;
 margin: 0 auto;
-border-radius: 15px;
-background-color: ${(props) => props.theme.black.lighter};
+border: 5px solid white;
+background-color: rgba(0, 0, 0, 1);
 z-index:99;
 `;
 
@@ -162,10 +162,11 @@ z-index:99;
 
 
 const BigCover = styled.div`
-width: 50vw;
+width: 49vw;
 height: 50vh;
 background-size: cover;
 background-position: center center;
+border-bottom: 1px solid white;
 `;
 
 const BigTitle = styled.h2`
@@ -204,9 +205,11 @@ font-family: cursive;
 `;
 
 const UnpreparedPreview = styled.h2`
-font-size: 36px;
+font-size: 20px;
 text-align: center;
-margin-top: -40px;
+position: absolute;
+left: 40%;
+bottom: 45%;
 `;
 const UnpreparedOverview = styled.h2`
 font-size: 36px;
@@ -271,9 +274,6 @@ const Now_Playing_MovieMatch = useMatch("/movies/:movieId");
 //console.log(Now_Playing_MovieMatch)
 const Popular_MovieMatch = useMatch("/movies/popular/:movieId");
 
-
-const Video_MovieMatch = useMatch("/movies/:movieId/videos");
-//console.log(Video_MovieMatch)
 
 const {scrollY} = useScroll();
 
@@ -350,7 +350,7 @@ const toggleLeaving = () => {
 //--------------------------------------------------------------------
 
 
-const Now_playing_BoxCliked = (movieId:number) => {
+const Now_playing_BoxClicked = (movieId:number) => {
 navigate(`/movies/${movieId}`)
 }
 
@@ -403,7 +403,7 @@ navigate(-1);
             .map((movie)=>
             <Box 
             layoutId={movie.id+""}
-            onClick={() => Now_playing_BoxCliked(movie.id)}
+            onClick={() => Now_playing_BoxClicked(movie.id)}
             variants={boxVars}
             initial="normal"
             key={movie.id}
@@ -442,7 +442,7 @@ navigate(-1);
             }}
             />
             <BigMovie
-            style={{top:scrollY.get()+100, bottom: scrollY.get()+100}}
+            style={{top:scrollY.get()-80, bottom: scrollY.get()+10}}
             layoutId={Now_Playing_MovieMatch.params.movieId}>
             {clickedMovie && 
             <>
@@ -532,7 +532,7 @@ navigate(-1);
             }}
             />
             <BigMovie
-            style={{top:scrollY.get()+100, bottom: scrollY.get()+100}}
+            style={{top:scrollY.get()-120, bottom: scrollY.get()+10}}
             layoutId={Popular_MovieMatch.params.movieId}>
             {clickedPopularMovie && 
             <>

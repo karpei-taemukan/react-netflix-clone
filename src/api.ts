@@ -1,5 +1,3 @@
-import { useMatch } from "react-router-dom";
-
 const API_KEY = "ec2bd6ce45716cc9418f09264b0aafb5";
 const BASE_PATH = "https://api.themoviedb.org/3";
 
@@ -37,6 +35,10 @@ export interface IMovieDetailsVideo {
     results: IMoiveDetail[] // 따로 작성하는 이유는 results가 여러개이기 때문이다
 }
 
+export interface ISearchMovie{
+    results: IMovie[]
+}
+
 export function getMovies(){
     return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1&region=kr`)
     .then(res => res.json());
@@ -54,4 +56,8 @@ return fetch(`${BASE_PATH}/movie/${movieId}/videos?api_key=${API_KEY}&language=e
 export function Popular_MovieDetails(movieId:number){
 
     return fetch(`${BASE_PATH}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
+}
+
+export function Search_Movies(keyword:string){
+    return fetch(`${BASE_PATH}/search/movie?api_key=${API_KEY}&language=en-US&query=${keyword}&page=1&include_adult=false`).then(res=>res.json());
 }
