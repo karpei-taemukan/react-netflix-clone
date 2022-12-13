@@ -50,6 +50,7 @@ width:50%;
 
 const Slider = styled(motion.div)`
 position:relative;
+
 top: -100px;
 `;
 const Row = styled(motion.div)`
@@ -192,14 +193,15 @@ const BigOverview = styled.p`
 padding: 10px;
 color: ${(props) => props.theme.white.lighter};
 line-height: 2.5;
+text-overflow: ellipsis
 font-family: Georgia, serif;
 `;
 
 const BigVideo = styled.div`
 display: flex;
 justify-content: center;
-margin-top: -180px;
-margin-left: 80px;
+margin-top: -200px;
+margin-left: 100px;
 `;
 
 const BigDate = styled.h3`
@@ -250,6 +252,7 @@ margin-bottom: 10px;
 
 const PopularSlider = styled(motion.div)`
 position:relative;
+
 top: -5px;
 `;
 
@@ -476,8 +479,8 @@ navigate(-1);
          <ReactPlayer
          url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
          className="react-player"
-         width="27vw"
-         height="45vh"
+         width="30vw"
+         height="60vh"
          playing={true}
          muted={false}
          controls={true}
@@ -566,8 +569,8 @@ navigate(-1);
          <ReactPlayer
          url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
          className="react-player"
-         width="27vw"
-         height="45vh"
+         width="30vw"
+         height="60vh"
          playing={true}
          muted={false}
          controls={true}

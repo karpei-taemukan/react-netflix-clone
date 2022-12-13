@@ -71,13 +71,13 @@ margin-left: 200px;
 
 const rowVars = {
     hidden:{
-    x:window.outerWidth-10,
+    y:window.outerWidth-10,
     },
     visible:{
-        x:0,
+        y:0,
     },
     exit:{
-        x:-window.outerWidth+10,
+        y:-window.outerWidth+10,
     },
 }
 
