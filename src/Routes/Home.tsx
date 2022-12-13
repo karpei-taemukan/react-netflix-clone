@@ -11,6 +11,7 @@ import ReactPlayer from "react-player";
 
 const Wrapper = styled.div`
 background: black;
+height: 300%;
 `;
 
 const Loader = styled.div`
@@ -61,7 +62,7 @@ width:100%;
 const Box = styled(motion.div)<{bgphoto:string}>`
 background-color: white;
 background-image: url(${(props) => props.bgphoto});
-height: 200px;
+height: 30em;
 color:red;
 background-size: cover;
 background-position: center center;
@@ -91,6 +92,7 @@ const boxVars = {
         scale: 1,
     },
     hover:{
+        borderRadius: "15px",
         scale: 1.3,
         y:-50,
         transition:{
@@ -101,6 +103,12 @@ const boxVars = {
     }
 }
 
+const bigmovieVars = {
+    hover: {
+        scale: 1,
+        borderRadius: "15px",
+    }
+}
 
 //--------------------------------------------------------------------
 
@@ -116,11 +124,13 @@ h4{
     text-align: center;
     font-size: 8px;
     color: white;
+    font-family: system-ui;
 }
 `;
 
 const infoVars = {
     hover:{
+        borderRadius: "15px",
         opacity: 1,
         transition: {
             delay: 0.5,
@@ -148,7 +158,7 @@ background-color: rgba(0,0,0,0.5);
 const BigMovie = styled(motion.div)`
 position: absolute;
 width: 50vw;
-height: 120vh;
+height: 130vh;
 left: 0;
 right: 0;
 margin: 0 auto;
@@ -196,12 +206,14 @@ const BigDate = styled.h3`
 font-size: 20px;
 padding: 10px;
 font-family: cursive;
+margin-left: 7%;
 `;
 
 const BigVote = styled.h3`
 font-size: 20px;
 padding: 10px;
 font-family: cursive;
+margin-left: 7%;
 `;
 
 const UnpreparedPreview = styled.h2`
@@ -209,7 +221,7 @@ font-size: 20px;
 text-align: center;
 position: absolute;
 left: 40%;
-bottom: 45%;
+bottom: 50%;
 `;
 const UnpreparedOverview = styled.h2`
 font-size: 36px;
@@ -222,12 +234,13 @@ margin-top: 50px;
 const FirstSlider = styled.h3`
 padding: 10px;
 margin-bottom: 100px;
+margin-top: 5%;
 font-size: 40px;
 `;
 
 const SecondSlider = styled.h3`
 font-size: 40px;
-margin-top: 200px;
+margin-top: 30%;
 padding: 10px;
 margin-bottom: 10px;
 `;
@@ -251,7 +264,7 @@ width:100%;
 const PopularBox = styled(motion.div)<{bgphoto:string}>`
 background-color: white;
 background-image: url(${(props) => props.bgphoto});
-height: 200px;
+height: 30em;
 color:red;
 background-size: cover;
 background-position: center center;
@@ -442,6 +455,8 @@ navigate(-1);
             }}
             />
             <BigMovie
+            variants={bigmovieVars}
+            whileInView="hover"
             style={{top:scrollY.get()-80, bottom: scrollY.get()+10}}
             layoutId={Now_Playing_MovieMatch.params.movieId}>
             {clickedMovie && 
@@ -452,17 +467,17 @@ navigate(-1);
         clickedMovie.poster_path,
         "w500")})`,}} />
             <BigTitle>{clickedMovie.title}</BigTitle>
-            <h2 style={{padding: "10px"}}>Release_Date:</h2>
+            <h2 style={{padding: "10px", marginLeft: "7%"}}>Release_Date:</h2>
             <BigDate>{clickedMovie.release_date}</BigDate>
-            <h2 style={{padding: "10px"}}>Vote_Average:</h2>
+            <h2 style={{padding: "10px", marginLeft: "7%"}}>Vote_Average:</h2>
         <BigVote>{clickedMovie.vote_average}</BigVote>
         { detailNow_Video?.results.length !== 0 ? 
         <BigVideo>
          <ReactPlayer
          url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
          className="react-player"
-         width="300px"
-         height="200px"
+         width="27vw"
+         height="45vh"
          playing={true}
          muted={false}
          controls={true}
@@ -542,17 +557,17 @@ navigate(-1);
         clickedPopularMovie.backdrop_path,
         "w500")})`,}} />
             <BigTitle>{clickedPopularMovie.title}</BigTitle>
-            <h2 style={{padding: "10px"}}>Release_Date:</h2>
+            <h2 style={{padding: "10px",marginLeft: "7%"}}>Release_Date:</h2>
             <BigDate>{clickedPopularMovie.release_date}</BigDate>
-            <h2 style={{padding: "10px"}}>Vote_Average:</h2>
+            <h2 style={{padding: "10px",marginLeft: "7%"}}>Vote_Average:</h2>
         <BigVote>{clickedPopularMovie.vote_average}</BigVote>
         { detailNow_Video?.results.length !== 0 ? 
         <BigVideo>
          <ReactPlayer
          url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
          className="react-player"
-         width="300px"
-         height="200px"
+         width="27vw"
+         height="45vh"
          playing={true}
          muted={false}
          controls={true}
