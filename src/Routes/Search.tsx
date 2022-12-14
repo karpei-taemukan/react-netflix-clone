@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Search_Movies,ISearchMovie } from "../api";
 import styled from "styled-components";
 
@@ -64,7 +64,90 @@ h4{
 const NotFound = styled.h1`
 font-size: 100px;
 margin-top: 200px;
-margin-left: 200px;
+margin-left: 220%;
+`;
+
+const Overlay = styled(motion.div)`
+position: fixed;
+top:0;
+width:100%;
+height:100%;
+background-color: red;
+`;
+
+const BigMovie = styled(motion.div)`
+position: absolute;
+width: 50vw;
+height: 130vh;
+left: 0;
+right: 0;
+margin: 0 auto;
+border: 5px solid white;
+background-color: rgba(0, 0, 0, 1);
+z-index:99;
+`;
+
+
+//--------------------------------------------------------------------
+
+
+const BigCover = styled.div`
+width: 49.5vw;
+height: 50vh;
+background-size: cover;
+background-position: center center;
+border-bottom: 1px solid white;
+`;
+
+const BigTitle = styled.h2`
+color: ${(props) => props.theme.white.lighter};
+padding: 10px;
+position: relative;
+top: -80px;
+font-size: 30px;
+font-family: system-ui;
+`;
+
+const BigOverview = styled.p`
+padding: 10px;
+color: ${(props) => props.theme.white.lighter};
+text-align: center;
+text-indent: 5%;
+font-family: Georgia, serif;
+`;
+
+const BigVideo = styled.div`
+display: flex;
+justify-content: center;
+margin-top: -200px;
+margin-left: 100px;
+`;
+
+const BigDate = styled.h3`
+font-size: 20px;
+padding: 10px;
+font-family: cursive;
+margin-left: 7%;
+`;
+
+const BigVote = styled.h3`
+font-size: 20px;
+padding: 10px;
+font-family: cursive;
+margin-left: 7%;
+`;
+
+const UnpreparedPreview = styled.h2`
+font-size: 20px;
+text-align: center;
+position: absolute;
+left: 40%;
+bottom: 50%;
+`;
+const UnpreparedOverview = styled.h2`
+font-size: 36px;
+text-align: center;
+margin-top: 50px;
 `;
 
 // ------------------------------------------------------------------
@@ -108,22 +191,49 @@ const infoVars = {
     }
 }
 
+const bigmovieVars = {
+    hover: {
+        scale: 1,
+        borderRadius: "15px",
+    }
+}
+
 // ------------------------------------------------------------------
 
 
+
+
 function Search(){
-    const location = useLocation();
-    console.log(location)
-    const keyword = new URLSearchParams(location.search).get("keyword");
-    console.log(keyword);
+const location = useLocation();
+console.log(location)
+console.log(location.search);
+const navigate = useNavigate();
 
-    const {data:search_Movie}  = useQuery<ISearchMovie>(["movie" ,"search"], ()=>Search_Movies(keyword+""))
 
-    console.log(search_Movie);
-console.log(Box);
+const keyword = new URLSearchParams(location.search).get("keyword");
+//console.log(keyword);
 
+
+const {data:search_Movie} = useQuery<ISearchMovie>(["movie" ,"search"], ()=>Search_Movies(keyword+""))
+
+const Search_MovieMatch = useMatch("/search?keyword");
+console.log(Search_MovieMatch) // null 안나오게 해야함
+ 
+const Search_MovieClicked = () => {
+    navigate(`/search${location.search}/details`);
+}
+
+
+const onOverlayClick = () => {
+    navigate(-1);
+}
+
+// ------------------------------------------------------------------
 
 const [index,setIndex] = useState(0);
+// ------------------------------------------------------------------
+
+
 
     return (
         <Wrapper>
@@ -139,6 +249,7 @@ const [index,setIndex] = useState(0);
                 >
                 {search_Movie?.results.filter((movie) => movie.poster_path !== null).map((movie) => 
                <Box
+                onClick={Search_MovieClicked}
                 variants={boxVars}
                 initial="initial"
                 whileHover="hover"
@@ -152,6 +263,21 @@ const [index,setIndex] = useState(0);
                 </Row>
                 </AnimatePresence>
             </SearchSlider>
+            <AnimatePresence>
+                {Search_MovieMatch ? (<>
+                <Overlay
+                onClick={onOverlayClick} 
+                animate={{opacity: 1}}
+                exit={{opacity: 0}}
+                /> 
+                <BigMovie
+                variants={bigmovieVars}
+                whileHover="hover"
+                >
+
+                </BigMovie>
+                </>):null}
+            </AnimatePresence>
         </Wrapper>
     )
 }

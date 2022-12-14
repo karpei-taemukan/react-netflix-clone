@@ -4,8 +4,8 @@ import Home from "./Routes/Home";
 import Search from "./Routes/Search";
 import Tv from "./Routes/Tv";
 
-
 function App() {
+
   return (
     <>
 <BrowserRouter>
@@ -17,6 +17,7 @@ function App() {
 <Route path="/movies/:movieId/videos" element={<Home/>}/>
 <Route path="/tv" element={<Tv/>}/>      
 <Route path="/search" element={<Search/>}/> 
+<Route path="/search?keyword" element={<Search/>}/> 
 </Routes>
 </BrowserRouter>
     </>

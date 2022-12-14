@@ -11,7 +11,6 @@ import ReactPlayer from "react-player";
 
 const Wrapper = styled.div`
 background: black;
-height: 300%;
 `;
 
 const Loader = styled.div`
@@ -63,7 +62,7 @@ width:100%;
 const Box = styled(motion.div)<{bgphoto:string}>`
 background-color: white;
 background-image: url(${(props) => props.bgphoto});
-height: 30em;
+height: 70vh;
 color:red;
 background-size: cover;
 background-position: center center;
@@ -173,7 +172,7 @@ z-index:99;
 
 
 const BigCover = styled.div`
-width: 49vw;
+width: 49.5vw;
 height: 50vh;
 background-size: cover;
 background-position: center center;
@@ -192,8 +191,8 @@ font-family: system-ui;
 const BigOverview = styled.p`
 padding: 10px;
 color: ${(props) => props.theme.white.lighter};
-line-height: 2.5;
-text-overflow: ellipsis
+text-align: center;
+text-indent: 5%;
 font-family: Georgia, serif;
 `;
 
@@ -238,13 +237,15 @@ padding: 10px;
 margin-bottom: 100px;
 margin-top: 5%;
 font-size: 40px;
+cursor: pointer;
 `;
 
 const SecondSlider = styled.h3`
 font-size: 40px;
-margin-top: 30%;
+margin-top: 40%;
 padding: 10px;
 margin-bottom: 10px;
+cursor: pointer;
 `;
 
 
@@ -550,6 +551,8 @@ navigate(-1);
             }}
             />
             <BigMovie
+               variants={bigmovieVars}
+               whileInView="hover"
             style={{top:scrollY.get()-120, bottom: scrollY.get()+10}}
             layoutId={Popular_MovieMatch.params.movieId}>
             {clickedPopularMovie && 
