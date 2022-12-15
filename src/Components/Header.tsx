@@ -200,7 +200,7 @@ const {register, handleSubmit, setValue } = useForm<IForm>();
 const onValid = (data:IForm) => {
 console.log(data);
 navigate(`/search?keyword=${data.keyword}`)
-window.location.reload();
+//window.location.reload();
 }
 setValue("keyword", "");
     return (

@@ -304,7 +304,6 @@ const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
 //console.log(popularData, popularLoading);
 
 const id = useParams();
-//console.log(id)
 
 const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.movieId)
 //console.log(clickedMovie);
@@ -315,6 +314,7 @@ const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.r
 //console.log(Popular_MovieMatch?.params.movieId);
 
 const movieId = Number(id.movieId);
+console.log(movieId)
 
 const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["smallVideo","nowDetail"], 
 ()=>Now_Playing_MovieDetails(movieId),

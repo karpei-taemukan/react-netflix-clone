@@ -15,6 +15,36 @@ const Wrapper = styled.div`
 background: black;
 `;
 
+const Loader = styled.div`
+height: 20vh;
+font-size: 200px;
+color: white;
+display: flex;
+justift-content:center;
+align-items: center;
+`;
+
+const Banner = styled.div<{bgphoto:string}>`
+height: 100vh;
+display: flex;
+flex-direction: column;
+justify-content: center;
+padding: 60px;
+background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
+url(${(props) => props.bgphoto});
+background-size: cover;
+`;
+
+const Title = styled.h2`
+font-size: 50px;
+margin-bottom: 10px;
+`;
+
+const Overview = styled.p`
+font-size: 15px;
+width:50%;
+`;
+
 const SearchSlider = styled(motion.div)`
 position:relative;
 top: 100px;
@@ -72,7 +102,6 @@ position: fixed;
 top:0;
 width:100%;
 height:100%;
-background-color: red;
 `;
 
 const BigMovie = styled(motion.div)`
@@ -206,23 +235,24 @@ const bigmovieVars = {
 function Search(){
 const location = useLocation();
 console.log(location)
-console.log(location.search);
+
 const navigate = useNavigate();
 
 
 const keyword = new URLSearchParams(location.search).get("keyword");
-//console.log(keyword);
+console.log(keyword);
 
 
-const {data:search_Movie} = useQuery<ISearchMovie>(["movie" ,"search"], ()=>Search_Movies(keyword+""))
+const {data:search_Movie, isLoading} = useQuery<ISearchMovie>(["movies" ,"search"], ()=>Search_Movies(keyword+""), {enabled: !!keyword})
+console.log(search_Movie);
 
-const Search_MovieMatch = useMatch("/search?keyword");
-console.log(Search_MovieMatch) // null 안나오게 해야함
+//const Search_MovieMatch = useMatch("/search/movie/:movieId");
+//console.log(Search_MovieMatch) // null 안나오게 해야함
  
-const Search_MovieClicked = () => {
-    navigate(`/search${location.search}/details`);
+const Search_MovieClicked = (keyword:string) => {
+    navigate(`/search/movie/:movieId/?keyword=${keyword}`);
 }
-
+ // movieId만 얻어오자
 
 const onOverlayClick = () => {
     navigate(-1);
@@ -237,7 +267,11 @@ const [index,setIndex] = useState(0);
 
     return (
         <Wrapper>
-            <SearchSlider>
+                 {isLoading ? 
+        <Loader>Loading...</Loader> 
+        :
+        <>
+      <SearchSlider>
                 <AnimatePresence>
                 <Row
                 variants={rowVars}
@@ -249,7 +283,7 @@ const [index,setIndex] = useState(0);
                 >
                 {search_Movie?.results.filter((movie) => movie.poster_path !== null).map((movie) => 
                <Box
-                onClick={Search_MovieClicked}
+                onClick={()=>Search_MovieClicked(keyword+"")}
                 variants={boxVars}
                 initial="initial"
                 whileHover="hover"
@@ -263,10 +297,10 @@ const [index,setIndex] = useState(0);
                 </Row>
                 </AnimatePresence>
             </SearchSlider>
-            <AnimatePresence>
+         { /*  <AnimatePresence>
                 {Search_MovieMatch ? (<>
                 <Overlay
-                onClick={onOverlayClick} 
+               
                 animate={{opacity: 1}}
                 exit={{opacity: 0}}
                 /> 
@@ -277,7 +311,9 @@ const [index,setIndex] = useState(0);
 
                 </BigMovie>
                 </>):null}
-            </AnimatePresence>
+                </AnimatePresence> */}
+        </>}
+            
         </Wrapper>
     )
 }
