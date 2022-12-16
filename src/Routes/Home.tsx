@@ -296,7 +296,7 @@ const {scrollY} = useScroll();
 
 
 const {data, isLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies);
-//console.log(data, isLoading);
+console.log(data, isLoading);
 
 
 const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
@@ -314,7 +314,7 @@ const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.r
 //console.log(Popular_MovieMatch?.params.movieId);
 
 const movieId = Number(id.movieId);
-console.log(movieId)
+//console.log(movieId)
 
 const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["smallVideo","nowDetail"], 
 ()=>Now_Playing_MovieDetails(movieId),
@@ -490,8 +490,11 @@ navigate(-1);
          />
          </BigVideo>
          : <UnpreparedPreview>Preview is coming soon...</UnpreparedPreview> } 
-            {clickedMovie.overview !== "" ? <BigOverview>{clickedMovie.overview}</BigOverview>
-            : <UnpreparedOverview>OverView is coming soon...</UnpreparedOverview>
+      
+
+{detailNow_Video?.results.length !== 0 ? 
+       <BigOverview>{clickedMovie.overview}</BigOverview> : clickedMovie.overview !== "" ? <BigOverview style={{marginTop: "20%"}}>{clickedMovie.overview}</BigOverview>
+       : <UnpreparedOverview style={{marginTop: "20%"}}>OverView is coming soon...</UnpreparedOverview>
         }
             </>  }
     
