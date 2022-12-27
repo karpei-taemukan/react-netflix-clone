@@ -62,7 +62,7 @@ width:100%;
 const Box = styled(motion.div)<{bgphoto:string}>`
 background-color: white;
 background-image: url(${(props) => props.bgphoto});
-height: 70vh;
+height: 60vh;
 color:red;
 background-size: cover;
 background-position: center center;

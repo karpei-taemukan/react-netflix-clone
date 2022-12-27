@@ -62,3 +62,7 @@ export function Popular_MovieDetails(movieId:number){
 export function Search_Movies(keyword:string){
     return fetch(`${BASE_PATH}/search/movie?api_key=${API_KEY}&language=en-US&query=${keyword}&page=1&include_adult=false`).then(res=>res.json());
 }
+
+export function getTvShow(){
+    return fetch(`${BASE_PATH}/tv/airing_today?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
+}
