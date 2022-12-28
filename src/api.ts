@@ -66,3 +66,12 @@ export function Search_Movies(keyword:string){
 export function getTvShow(){
     return fetch(`${BASE_PATH}/tv/airing_today?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
 }
+
+export function getPopularTv(){
+    return fetch(`${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=1`).then(res=>res.json());
+}
+
+export function get_TvDetails(tvId:number){
+
+    return fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
+    }
