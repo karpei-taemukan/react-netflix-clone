@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
 import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { getTvShow, getPopularTv, IGetMoviesResult, IMovieDetailsVideo,get_TvDetails,Popular_MovieDetails } from "../api";
+import { getTvShow, getPopularTv, IGetMoviesResult, IMovieDetailsVideo,get_TvDetails,Popular_MovieDetails,ITvVideo,get_Tv_Video } from "../api";
 import { makeImagePath } from "../untills";
 import ReactPlayer from "react-player";
 
@@ -305,6 +305,8 @@ const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
 
 const id = useParams();
 
+//console.log(id)
+
 const clickedTv = Now_Playing_MovieMatch?.params.tvId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.tvId);
 
 const clickedPopularTv = Popular_MovieMatch?.params.tvId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.tvId)
@@ -316,13 +318,15 @@ const {data:detailNow_Tv, isLoading:detailNow_loading} = useQuery<IMovieDetailsV
 {enabled: !!tvId} 
 );
 
-console.log(detailNow_Tv)
+//console.log(detailNow_Tv)
 
 const {data:detailPopular_Video, isLoading:detailPopular_loading} = useQuery<IMovieDetailsVideo>(["smallVideo", "popularDetail"],
 ()=>get_TvDetails(tvId),
 {enabled: !!tvId}
 );
 
+const {data:tv_video} = useQuery<ITvVideo>(["smallVideo","tvdetail"], ()=>get_Tv_Video(tvId),{enabled: !!tvId} )
+console.log(tv_video);
 
 //--------------------------------------------------------------------
 
@@ -420,7 +424,7 @@ navigate(-1);
                 makeImagePath(movie.poster_path, "w500")}
             > 
    
-            <Info variants={infoVars}><h4>{movie.title}</h4>
+            <Info variants={infoVars}><h4>{movie.name}</h4>
             </Info>
             
             </Box>
@@ -494,7 +498,7 @@ navigate(-1);
             bgphoto={makeImagePath(movie.poster_path, "w500")}
             >
    
-            <Info variants={infoVars}><h4>{movie.title}</h4>
+            <Info variants={infoVars}><h4>{movie.name}</h4>
             </Info>
             
             </PopularBox>

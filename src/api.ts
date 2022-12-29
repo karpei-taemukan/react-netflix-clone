@@ -11,6 +11,7 @@ export interface IMovie {
     title:string,
     release_date: string,
     vote_average: number,
+    name: string
 }
 
 export interface IGetMoviesResult
@@ -37,6 +38,22 @@ export interface IMovieDetailsVideo {
 
 export interface ISearchMovie{
     results: IMovie[]
+}
+
+export interface ITvVideo{
+    id: number,
+    results: [
+iso_639_1:string,
+iso_3166_1:string,
+name:string,
+key:string,
+site:string,
+size: number,
+type:string,
+official:boolean,
+published_at:string,
+id:string
+    ]
 }
 
 export function getMovies(){
@@ -69,6 +86,10 @@ export function getTvShow(){
 
 export function getPopularTv(){
     return fetch(`${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=1`).then(res=>res.json());
+}
+
+export function get_Tv_Video(tvId:number){
+    return fetch(`${BASE_PATH}/tv/${tvId}/videos?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
 }
 
 export function get_TvDetails(tvId:number){
