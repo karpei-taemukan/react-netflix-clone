@@ -4,10 +4,10 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
 import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { getTvShow, getPopularTv, IGetMoviesResult, IMovieDetailsVideo,get_TvDetails,Popular_MovieDetails,ITvVideo,get_Tv_Video } from "../api";
+import { getTvShow, getPopularTv, IGetMoviesResult, IMovieDetailsVideo,get_TvDetails,IGetTvs,ITvVideo,get_Tv_Video,getTv_Lastest } from "../api";
 import { makeImagePath } from "../untills";
 import ReactPlayer from "react-player";
-
+import {Helmet} from "react-helmet";
 
 const Wrapper = styled.div`
 background: black;
@@ -294,24 +294,27 @@ const Popular_MovieMatch = useMatch("/tv/popular/:tvId");
 
 const {scrollY} = useScroll();
 
-
-const {data, isLoading} = useQuery<IGetMoviesResult>(["tvs", "nowPlaying"], getTvShow);
-console.log(data, isLoading);
-
-
-const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
-    ["tvs", "popular"], getPopularTv);  
 //console.log(popularData, popularLoading);
 
 const id = useParams();
 
 //console.log(id)
 
+const tvId = Number(id.tvId);
+
+
+const {data, isLoading} = useQuery<IGetTvs>(["tvs", "nowPlaying"], getTvShow);
+//console.log(data, isLoading);
+
+
+const {data:popularData, isLoading:popularLoading} = useQuery<IGetTvs>(
+    ["tvs", "popular"], getPopularTv);  
+
+
 const clickedTv = Now_Playing_MovieMatch?.params.tvId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.tvId);
 
 const clickedPopularTv = Popular_MovieMatch?.params.tvId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.tvId)
-
-const tvId = Number(id.tvId);
+    
 
 const {data:detailNow_Tv, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["smallVideo","nowDetail"], 
 ()=>get_TvDetails(tvId),
@@ -385,6 +388,10 @@ navigate(-1);
 
     return (
     <Wrapper>
+        <Helmet>  
+    <title>NETFLIX</title>
+            <link rel="icon" href="https://play-lh.googleusercontent.com/TBRwjS_qfJCSj1m7zZB93FnpJM5fSpMA_wUlFDLxWAb45T9RmwBvQd5cWR5viJJOhkI" />
+        </Helmet>
         {isLoading ? 
         <Loader>Loading...</Loader> 
         :
@@ -458,7 +465,7 @@ navigate(-1);
         "w500")})`,}} />
             <BigTitle>{clickedTv.title}</BigTitle>
             <h2 style={{padding: "10px", marginLeft: "7%"}}>Release_Date:</h2>
-            <BigDate>{clickedTv.release_date}</BigDate>
+            <BigDate>{clickedTv.first_air_date}</BigDate>
             <h2 style={{padding: "10px", marginLeft: "7%"}}>Vote_Average:</h2>
         <BigVote>{clickedTv.vote_average}</BigVote>
     
@@ -528,11 +535,11 @@ navigate(-1);
             <BigCover
              style={{
         backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
-        clickedPopularTv.backdrop_path,
+        clickedPopularTv.poster_path,
         "w500")})`,}} />
             <BigTitle>{clickedPopularTv.title}</BigTitle>
             <h2 style={{padding: "10px",marginLeft: "7%"}}>Release_Date:</h2>
-            <BigDate>{clickedPopularTv.release_date}</BigDate>
+            <BigDate>{clickedPopularTv.first_air_date}</BigDate>
             <h2 style={{padding: "10px",marginLeft: "7%"}}>Vote_Average:</h2>
         <BigVote>{clickedPopularTv.vote_average}</BigVote>
        

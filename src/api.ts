@@ -40,20 +40,31 @@ export interface ISearchMovie{
     results: IMovie[]
 }
 
-export interface ITvVideo{
-    id: number,
-    results: [
-iso_639_1:string,
-iso_3166_1:string,
-name:string,
+export interface IGetTvResults{
+    backdrop_path: string | null,
+    id:number,
+    original_language:string,
+    original_title:string,
+    overview:string,
+    poster_path:string,
+    title:string,
+    first_air_date: string,
+    vote_average: number,
+    name: string
+}
+
+export interface IGetTvs{
+    results:IGetTvResults[],
+    total_pages: number,
+total_results: number
+}
+
+export interface ITvVideoResults{
 key:string,
-site:string,
-size: number,
-type:string,
-official:boolean,
-published_at:string,
-id:string
-    ]
+}
+
+export interface ITvVideo{
+ results: ITvVideoResults[],
 }
 
 export function getMovies(){
@@ -85,7 +96,7 @@ export function getTvShow(){
 }
 
 export function getPopularTv(){
-    return fetch(`${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=1`).then(res=>res.json());
+    return fetch(`${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=2`).then(res=>res.json());
 }
 
 export function get_Tv_Video(tvId:number){
@@ -95,4 +106,8 @@ export function get_Tv_Video(tvId:number){
 export function get_TvDetails(tvId:number){
 
     return fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
-    }
+}
+
+export function getTv_Lastest(){
+    return fetch(`${BASE_PATH}/tv/latest?api_key=${API_KEY}`).then(res=>res.json());
+}
