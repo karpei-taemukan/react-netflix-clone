@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useLocation, useSearchParams } from "react-router-dom";
-import { Search_Movies,ISearchMovie, Now_Playing_MovieDetails, IMovieDetailsVideo } from "../api";
+import { Search_Movies,ISearchMovie, Now_Playing_MovieDetails, IMovieDetailsVideo,ISearchTv,Search_Tvs } from "../api";
 import styled from "styled-components";
 
 import { AnimatePresence, motion, useScroll } from "framer-motion";
@@ -26,9 +26,20 @@ align-items: center;
 `;
 
 
-const SearchSlider = styled(motion.div)`
+const MovieSearchSlider = styled(motion.div)`
 position:relative;
 top: 100px;
+`;
+
+const TvSearchHead = styled(motion.h1)`
+position: relative;
+font-size: 5em;
+top: 1500px;
+`;
+
+const TvSearchSlider = styled(motion.div)`
+position: relative;
+top: 1700px;
 `;
 
 const Row = styled(motion.div)`
@@ -235,10 +246,16 @@ const keyword = new URLSearchParams(location.search).get("keyword");
 const id = useParams();
 //console.log(id)
 
-const movieId = Number(id.movieId)
+const movieId = Number(id.movieId);
+const tvId = Number(id.tvId);
+
 
 const {data:search_Movie, isLoading} = useQuery<ISearchMovie>(["movies" ,"search"], ()=>Search_Movies(keyword+""), {enabled: !!keyword})
-console.log(search_Movie);
+//console.log(search_Movie);
+
+const {data:search_Tv} = useQuery<ISearchTv>(["tvs", "search"], ()=>Search_Tvs(keyword+""), {enabled: !!keyword})
+
+//console.log(search_Tv);
 
 const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["smallVideo","nowDetail"], 
 ()=>Now_Playing_MovieDetails(movieId),
@@ -249,12 +266,30 @@ const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetai
 const Search_MovieMatch = useMatch("/search/movie/:movieId");
 //console.log(Search_MovieMatch) 
  
+const Search_TvMatch = useMatch("/search/tv/:tvId");
+//console.log(Search_TvMatch);
+
+
+
 const Search_MovieClicked = (keyword:string, movieId:number) => {
     navigate(`/search/movie/${movieId}/?keyword=${keyword}`);
 }
+const Search_TvClicked = (keyword:string, tvId:number) => {
+    navigate(`/search/tv/${tvId}/?keyword=${keyword}`);
+}
+
+
+
 
 const clickedMovie = Search_MovieMatch?.params.movieId && search_Movie?.results.find(movie => movie.id+"" === Search_MovieMatch.params.movieId)
 //console.log(clickedMovie);
+
+
+const clickedTv = Search_TvMatch?.params.tvId && search_Tv?.results.find(tv => tv.id+"" === Search_TvMatch?.params.tvId);
+//console.log(clickedTv)
+
+// clickedTv 부분 만들기
+
 
 const onOverlayClick = () => {
     navigate(-1);
@@ -273,7 +308,7 @@ const [index,setIndex] = useState(0);
         <Loader>Loading...</Loader> 
         :
         <>
-      <SearchSlider>
+      <MovieSearchSlider>
                 <AnimatePresence>
                 <Row
                 variants={rowVars}
@@ -294,11 +329,48 @@ const [index,setIndex] = useState(0);
                 bgphoto={makeImagePath(movie.poster_path, "w500")}>
                     <Info variants={infoVars}><h4>{movie.title}</h4></Info>
                 </Box>)
-                 }
+                }
+
                 {search_Movie?.results.length === 0 ? <NotFound>NOT FOUND</NotFound>:null}
                 </Row>
+
                 </AnimatePresence>
-            </SearchSlider>
+            </MovieSearchSlider>
+
+
+
+               <TvSearchHead>Tv Show</TvSearchHead>
+            <TvSearchSlider>
+            <AnimatePresence>
+                <Row
+                variants={rowVars}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{type:"tween", duration: 1}}
+                key={index}
+                >
+                {search_Tv?.results.filter((movie) => movie.poster_path !== null).map((movie) => 
+               <Box
+                onClick={()=>Search_TvClicked(keyword+"", movie.id)}
+                variants={boxVars}
+                initial="initial"
+                whileHover="hover"
+                transition={{type: "tween"}}
+                key={movie.id} 
+                bgphoto={makeImagePath(movie.poster_path, "w500")}>
+                    <Info variants={infoVars}><h4>{movie.name}</h4></Info>
+                </Box>)
+                }
+
+                {search_Tv?.results.length === 0 ? <NotFound>NOT FOUND</NotFound>:null}
+                </Row>
+
+                </AnimatePresence>
+            </TvSearchSlider>
+
+
+
          <AnimatePresence>
                 {Search_MovieMatch ? (<>
                 <Overlay
@@ -351,6 +423,9 @@ const [index,setIndex] = useState(0);
                 </AnimatePresence>
         </>}
             
+
+  
+          
         </Wrapper>
     )
 }

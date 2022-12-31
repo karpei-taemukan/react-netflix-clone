@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails,Popular_MovieDetails } from "../api";
 import { makeImagePath } from "../untills";
 import ReactPlayer from "react-player";
+import {Helmet} from "react-helmet";
 
 
 const Wrapper = styled.div`
@@ -386,6 +387,10 @@ navigate(-1);
 
     return (
     <Wrapper>
+    <Helmet>  
+    <title>NETFLIX</title>
+    <link rel="icon" href="https://play-lh.googleusercontent.com/TBRwjS_qfJCSj1m7zZB93FnpJM5fSpMA_wUlFDLxWAb45T9RmwBvQd5cWR5viJJOhkI" />
+    </Helmet>
         {isLoading ? 
         <Loader>Loading...</Loader> 
         :
