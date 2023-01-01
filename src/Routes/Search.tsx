@@ -92,19 +92,11 @@ margin-left: 220%;
 const Overlay = styled(motion.div)`
 position: fixed;
 top:0;
-width:90%;
+width:100%;
 height:120%;
+background-color: rgba(0,0,0,0.5);
 `;
 
-const BackButton = styled.button`
-position: absolute;
-top: 12%;
-left: 70%;
-font-size: 40px;
-background-color: transparent;
-border: none;
-z-index:99;
-`;
 
 const BigMovie = styled(motion.div)`
 position: absolute;
@@ -144,6 +136,7 @@ padding: 10px;
 color: ${(props) => props.theme.white.lighter};
 text-align: center;
 font-family: Georgia, serif;
+line-height: 32px;
 `;
 
 const BigVideo = styled.div`
@@ -255,7 +248,7 @@ const {data:search_Movie, isLoading} = useQuery<ISearchMovie>(["movies" ,"search
 
 const {data:search_Tv} = useQuery<ISearchTv>(["tvs", "search"], ()=>Search_Tvs(keyword+""), {enabled: !!keyword})
 
-//console.log(search_Tv);
+console.log(search_Tv);
 
 const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["smallVideo","nowDetail"], 
 ()=>Now_Playing_MovieDetails(movieId),
@@ -376,8 +369,8 @@ const [index,setIndex] = useState(0);
                 <Overlay
                 animate={{opacity: 1}}
                 exit={{opacity: 0}}
+                onClick={onOverlayClick}
                 />
-                <BackButton onClick={onOverlayClick}>❌</BackButton>
                 
                 <BigMovie
                 variants={bigmovieVars}
@@ -423,6 +416,43 @@ const [index,setIndex] = useState(0);
                 </AnimatePresence>
         </>}
             
+
+        <AnimatePresence>
+                {Search_TvMatch ? (<>
+                <Overlay
+                animate={{opacity: 1}}
+                exit={{opacity: 0}}
+                onClick={onOverlayClick}
+                />
+                
+                <BigMovie
+                variants={bigmovieVars}
+                whileHover="hover"
+                style={{top:scrollY.get()+80, bottom: scrollY.get()+10}}
+                >
+                {clickedTv && 
+                <>
+            <BigCover
+             style={{
+        backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
+        clickedTv.poster_path,
+        "w500")})`,}} />
+     <BigTitle>{clickedTv.name}</BigTitle>
+            <h2 style={{padding: "10px", marginLeft: "45%", marginBottom: "5%"}}>Release_Date:</h2>
+            <BigDate style={{marginLeft: "45%", marginBottom: "5%"}}>{clickedTv.first_air_date}</BigDate>
+            <h2 style={{padding: "10px", marginLeft: "45%", marginBottom: "5%"}}>Vote_Average:</h2>
+        <BigVote style={{padding: "10px",marginLeft: "50%", marginBottom: "5%"}}>{clickedTv.vote_average}</BigVote>
+
+        {detailNow_Video?.results.length !== 0 ? 
+       <BigOverview>{clickedTv.overview}</BigOverview> : clickedTv.overview !== "" ? <BigOverview style={{marginTop: "20%"}}>{clickedTv.overview}</BigOverview>
+       : <UnpreparedOverview style={{marginTop: "20%"}}>OverView is coming soon...</UnpreparedOverview>
+        }
+    
+                </>
+                }
+                </BigMovie>
+                </>):null}
+                </AnimatePresence>
 
   
           
