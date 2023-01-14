@@ -4,13 +4,20 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
 import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { getTvShow, getPopularTv, IGetMoviesResult, IMovieDetailsVideo,get_TvDetails,IGetTvs,ITvVideo,get_Tv_Video,getTv_Lastest } from "../api";
+import { getTvShow, getPopularTv, IGetMoviesResult, IMovieDetailsVideo,get_TvDetails,IGetTvs,ITvVideo,get_Tv_Video,getTv_On_the_air } from "../api";
 import { makeImagePath } from "../untills";
 import ReactPlayer from "react-player";
 import {Helmet} from "react-helmet";
 
 const Wrapper = styled.div`
 background: black;
+`;
+
+const SmallWrapper = styled.div`
+display: flex;
+flex-direction: column;
+justify-content: space-around;
+align-items: center;
 `;
 
 const Loader = styled.div`
@@ -207,14 +214,14 @@ const BigDate = styled.h3`
 font-size: 20px;
 padding: 10px;
 font-family: cursive;
-margin-left: 7%;
+
 `;
 
 const BigVote = styled.h3`
 font-size: 20px;
 padding: 10px;
 font-family: cursive;
-margin-left: 7%;
+
 `;
 
 const UnpreparedPreview = styled.h2`
@@ -247,7 +254,13 @@ padding: 10px;
 margin-bottom: 10px;
 cursor: pointer;
 `;
-
+const ThirdSlider = styled.h3`
+font-size: 40px;
+margin-top: 40%;
+padding: 10px;
+margin-bottom: 10px;
+cursor: pointer;
+`;
 
 //--------------------------------------------------------------------
 
@@ -281,16 +294,48 @@ cursor: pointer;
 };
 `;
 
+//--------------------------------------------------------------------
+
+
+const OnAirSlider = styled(motion.div)`
+position:relative;
+
+top: -5px;
+`;
+
+const OnAirRow = styled(motion.div)`
+display: grid;
+grid-template-columns: repeat(6,1fr);
+gap: 5px;
+position:absolute;
+width:100%;
+`;
+
+const OnAirBox = styled(motion.div)<{bgphoto:string}>`
+background-color: white;
+background-image: url(${(props) => props.bgphoto});
+height: 30em;
+color:red;
+background-size: cover;
+background-position: center center;
+cursor: pointer;
+&:first-child{
+    transform-origin: center left;
+};
+&:last-child{
+    transform-origin: center right;
+};
+`;
 
 
 function Tv(){
 const offset = 6;
 //--------------------------------------------------------------------    
 const navigate  = useNavigate();
-const Now_Playing_MovieMatch = useMatch("/tv/:tvId");
-//console.log(Now_Playing_MovieMatch)
-const Popular_MovieMatch = useMatch("/tv/popular/:tvId");
-
+const Airing_Today_TvMatch = useMatch("/tv/:tvId");
+//console.log(Airing_Today_TvMatch)
+const Popular_TvMatch = useMatch("/tv/popular/:tvId");
+const OnAir_TvMatch = useMatch("tv/on_air/:tvId");
 
 const {scrollY} = useScroll();
 
@@ -304,22 +349,34 @@ const tvId = Number(id.tvId);
 
 
 const {data, isLoading} = useQuery<IGetTvs>(["tvs", "nowPlaying"], getTvShow);
-//console.log(data, isLoading);
+console.log(data, isLoading);
 
 
 const {data:popularData, isLoading:popularLoading} = useQuery<IGetTvs>(
     ["tvs", "popular"], getPopularTv);  
 
+const {data:OnAirData} =useQuery<IGetTvs>(["tvs", "latest"], getTv_On_the_air);    
+console.log(OnAirData)
 
-const clickedTv = Now_Playing_MovieMatch?.params.tvId && data?.results.find(movie => movie.id+"" === Now_Playing_MovieMatch.params.tvId);
 
-const clickedPopularTv = Popular_MovieMatch?.params.tvId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.tvId)
+const {data:tv_video} = useQuery<ITvVideo>(["smallVideo","tvdetail"], ()=>get_Tv_Video(tvId),{enabled: !!tvId} )
+
+
+
+const clickedTv = Airing_Today_TvMatch?.params.tvId && data?.results.find(movie => movie.id+"" === Airing_Today_TvMatch.params.tvId);
+
+const clickedPopularTv = Popular_TvMatch?.params.tvId && popularData?.results.find(movie => movie.id+"" === Popular_TvMatch.params.tvId)
     
+const clickedOnAirTv = OnAir_TvMatch?.params.tvId && OnAirData?.results.find(movie => movie.id+"" === OnAir_TvMatch.params.tvId)
+    
+
+
 
 const {data:detailNow_Tv, isLoading:detailNow_loading} = useQuery<IMovieDetailsVideo>(["smallVideo","nowDetail"], 
 ()=>get_TvDetails(tvId),
 {enabled: !!tvId} 
 );
+
 
 //console.log(detailNow_Tv)
 
@@ -328,8 +385,7 @@ const {data:detailPopular_Video, isLoading:detailPopular_loading} = useQuery<IMo
 {enabled: !!tvId}
 );
 
-const {data:tv_video} = useQuery<ITvVideo>(["smallVideo","tvdetail"], ()=>get_Tv_Video(tvId),{enabled: !!tvId} )
-console.log(tv_video);
+//console.log(tv_video);
 
 //--------------------------------------------------------------------
 
@@ -337,6 +393,7 @@ console.log(tv_video);
 const [index,setIndex] = useState(0);
 const [leaving, setLeaving] = useState(false);
 const [popindex,setpopIndex] = useState(0);
+const [onairindex, setOnAirIndex] = useState(0);
 
 //--------------------------------------------------------------------
 
@@ -362,6 +419,16 @@ const popularIndex = () => {
         }
 }
 
+const onAirIndex  = () => {
+    if(OnAirData){
+        if(leaving) return;
+        toggleLeaving();
+        const totalMovies = OnAirData?.results.length - 1;
+        const maxIndex = Math.floor(totalMovies/offset) - 1;
+        setOnAirIndex(current => current === maxIndex ? 0 : current+1)
+        }
+}
+
 const toggleLeaving = () => {
     setLeaving(current => !current);
 };
@@ -376,6 +443,10 @@ navigate(`/tv/${tvId}`)
 const Popular_BoxCliked = (tvId:number) => {
     navigate(`/tv/popular/${tvId}`)
     }
+
+    const OnAir_BoxCliked = (tvId:number) => {
+        navigate(`/tv/on_air/${tvId}`)
+        }
 
 //--------------------------------------------------------------------
 
@@ -403,7 +474,7 @@ navigate(-1);
         </Banner>
         </>}
    
-        <FirstSlider onClick={increaseIndex}>Now Playing</FirstSlider>
+        <FirstSlider onClick={increaseIndex}>Airing Today</FirstSlider>
         <Slider>
             <AnimatePresence 
             initial={false}
@@ -443,7 +514,7 @@ navigate(-1);
             </AnimatePresence>
         </Slider>
         <AnimatePresence>
-            {Now_Playing_MovieMatch ? (<>
+            {Airing_Today_TvMatch ? (<>
             <Overlay
             onClick={onOverlayClick}
             animate={{opacity: 1}}
@@ -455,7 +526,7 @@ navigate(-1);
             variants={bigmovieVars}
             whileInView="hover"
             style={{top:scrollY.get()-80, bottom: scrollY.get()+10}}
-            layoutId={Now_Playing_MovieMatch.params.tvId}>
+            layoutId={Airing_Today_TvMatch.params.tvId}>
             {clickedTv && 
             <>
             <BigCover
@@ -463,11 +534,14 @@ navigate(-1);
         backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
         clickedTv.poster_path,
         "w500")})`,}} />
+        <SmallWrapper>
             <BigTitle>{clickedTv.title}</BigTitle>
-            <h2 style={{padding: "10px", marginLeft: "7%"}}>Release_Date:</h2>
+            <h2 style={{padding: "10px"}}>first_air_date:</h2>
             <BigDate>{clickedTv.first_air_date}</BigDate>
-            <h2 style={{padding: "10px", marginLeft: "7%"}}>Vote_Average:</h2>
+            <h2 style={{padding: "10px"}}>Vote_Average:</h2>
         <BigVote>{clickedTv.vote_average}</BigVote>
+        <h2 style={{marginTop: "10%"}}>{clickedTv.overview}</h2>
+        </SmallWrapper>
     
             </>  }
     
@@ -517,7 +591,7 @@ navigate(-1);
         </PopularSlider>
 
     <AnimatePresence>
-            {Popular_MovieMatch ? (<>
+            {Popular_TvMatch ? (<>
             <Overlay
             onClick={onOverlayClick}
             animate={{opacity: 1}}
@@ -529,7 +603,7 @@ navigate(-1);
                variants={bigmovieVars}
                whileInView="hover"
             style={{top:scrollY.get()-120, bottom: scrollY.get()+10}}
-            layoutId={Popular_MovieMatch.params.tvId}>
+            layoutId={Popular_TvMatch.params.tvId}>
             {clickedPopularTv && 
             <>
             <BigCover
@@ -537,20 +611,102 @@ navigate(-1);
         backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
         clickedPopularTv.poster_path,
         "w500")})`,}} />
+
+        <SmallWrapper>
+
             <BigTitle>{clickedPopularTv.title}</BigTitle>
-            <h2 style={{padding: "10px",marginLeft: "7%"}}>Release_Date:</h2>
+            <h2 style={{padding: "10px"}}>Release_Date:</h2>
             <BigDate>{clickedPopularTv.first_air_date}</BigDate>
-            <h2 style={{padding: "10px",marginLeft: "7%"}}>Vote_Average:</h2>
+            <h2 style={{padding: "10px"}}>Vote_Average:</h2>
         <BigVote>{clickedPopularTv.vote_average}</BigVote>
-       
 
         {clickedPopularTv.overview !== "" ? <BigOverview>{clickedPopularTv.overview}</BigOverview>
             : <UnpreparedOverview>OverView is coming soon...</UnpreparedOverview>
         }
+        </SmallWrapper>
         </>}
             </BigMovie>
            </>) : null}
         </AnimatePresence>
+
+
+        <ThirdSlider onClick={onAirIndex}>On Air</ThirdSlider>
+        <OnAirSlider>
+            <AnimatePresence 
+            initial={false}
+            onExitComplete={toggleLeaving}
+            >
+      
+            <OnAirRow variants={rowVars}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{type:"tween", duration: 1}}
+            key={onairindex}>
+            {OnAirData?.results.slice(1)
+            .slice(offset*onairindex, offset*onairindex+offset)
+            .map((movie)=>
+            <OnAirBox 
+            layoutId={movie.id+""}
+            onClick={() => OnAir_BoxCliked(movie.id)}
+            variants={boxVars}
+            initial="normal"
+            key={movie.id}
+            whileHover="hover"
+            transition={{type: "tween"}}
+            bgphoto={
+                makeImagePath(movie.poster_path, "w500")}
+            > 
+   
+            <Info variants={infoVars}><h4>{movie.name}</h4>
+            </Info>
+            
+            </OnAirBox>
+            
+            )}
+        
+
+            </OnAirRow>
+            </AnimatePresence>
+        </OnAirSlider>
+        <AnimatePresence>
+            {OnAir_TvMatch? (<>
+            <Overlay
+            onClick={onOverlayClick}
+            animate={{opacity: 1}}
+            exit={{
+                opacity: 0
+            }}
+            />
+            <BigMovie
+            variants={bigmovieVars}
+            whileInView="hover"
+            style={{top:scrollY.get()-80, bottom: scrollY.get()+10}}
+            layoutId={OnAir_TvMatch.params.tvId}>
+            {clickedOnAirTv && 
+            <>
+            <BigCover
+             style={{
+        backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
+        clickedOnAirTv.poster_path,
+        "w500")})`,}} />
+        <SmallWrapper>
+
+            <BigTitle>{clickedOnAirTv.title}</BigTitle>
+            <h2 style={{padding: "10px"}}>Release_Date:</h2>
+            <BigDate>{clickedOnAirTv.first_air_date}</BigDate>
+            <h2 style={{padding: "10px"}}>Vote_Average:</h2>
+        <BigVote>{clickedOnAirTv.vote_average}</BigVote>
+        <h2 style={{marginTop: "10%"}}>{clickedOnAirTv.overview}</h2>
+        </SmallWrapper>
+            </>  }
+    
+            </BigMovie>
+           </>) : null}
+
+        </AnimatePresence>
+
+
 
 </Wrapper>
 )}

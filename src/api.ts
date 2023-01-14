@@ -2,6 +2,7 @@ const API_KEY = "ec2bd6ce45716cc9418f09264b0aafb5";
 const BASE_PATH = "https://api.themoviedb.org/3";
 
 export interface IMovie {
+    params: any;
     backdrop_path: string,
     id:number,
     original_language:string,
@@ -96,6 +97,14 @@ export function getPopularMovies(){
     return fetch(`${BASE_PATH}/movie/popular?api_key=${API_KEY}&language=en-US&page=2`).then(res=>res.json());
 }
 
+export function getTop_RatedMovies(){
+    return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=1`).then(res=>res.json());
+}
+
+export function getUpcomingMovies(){
+    return fetch(`${BASE_PATH}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`).then(res=>res.json());
+}
+
 export function Now_Playing_MovieDetails(movieId:number){
 
 return fetch(`${BASE_PATH}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
@@ -109,11 +118,15 @@ export function Popular_MovieDetails(movieId:number){
 
 
 export function getTvShow(){
-    return fetch(`${BASE_PATH}/tv/airing_today?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
+    return fetch(`${BASE_PATH}/tv/airing_today?api_key=${API_KEY}&language=en-US&page=1`).then(res=>res.json());
 }
 
 export function getPopularTv(){
     return fetch(`${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=2`).then(res=>res.json());
+}
+
+export function getTv_On_the_air(){
+    return fetch(`${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=3`).then(res=>res.json());
 }
 
 export function get_Tv_Video(tvId:number){
@@ -125,9 +138,6 @@ export function get_TvDetails(tvId:number){
     return fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}&language=en-US`).then(res=>res.json());
 }
 
-export function getTv_Lastest(){
-    return fetch(`${BASE_PATH}/tv/latest?api_key=${API_KEY}`).then(res=>res.json());
-}
 
 
 

@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
 import { useLocation, useMatch, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails,Popular_MovieDetails } from "../api";
+import {getUpcomingMovies, getTop_RatedMovies, getMovies, getPopularMovies, IGetMoviesResult, IMovieDetailsVideo,Now_Playing_MovieDetails,Popular_MovieDetails } from "../api";
 import { makeImagePath } from "../untills";
 import ReactPlayer from "react-player";
 import {Helmet} from "react-helmet";
@@ -12,6 +12,7 @@ import {Helmet} from "react-helmet";
 
 const Wrapper = styled.div`
 background: black;
+height: 500vh;
 `;
 
 const Loader = styled.div`
@@ -249,6 +250,21 @@ margin-bottom: 10px;
 cursor: pointer;
 `;
 
+const ThirdSlider = styled.h3`
+font-size: 40px;
+margin-top: 40%;
+padding: 10px;
+margin-bottom: 10px;
+cursor: pointer;
+`
+
+const FourthSlider = styled.h3`
+font-size: 40px;
+margin-top: 40%;
+padding: 10px;
+margin-bottom: 10px;
+cursor: pointer;
+`
 
 //--------------------------------------------------------------------
 
@@ -282,7 +298,65 @@ cursor: pointer;
 };
 `;
 
+//--------------------------------------------------------------------
 
+const TopRatedSlider = styled(motion.div)`
+position:relative;
+top: 70px;
+`
+
+const TopRatedRow = styled(motion.div)`
+display: grid;
+grid-template-columns: repeat(6,1fr);
+gap: 5px;
+position:absolute;
+width:100%;
+`;
+const TopRatedBox = styled(motion.div)<{bgphoto:string}>`
+background-color: white;
+background-image: url(${(props) => props.bgphoto});
+height: 20em;
+color:red;
+background-size: cover;
+background-position: center center;
+cursor: pointer;
+&:first-child{
+    transform-origin: center left;
+};
+&:last-child{
+    transform-origin: center right;
+};
+`;
+
+//--------------------------------------------------------------------
+
+const UpcomingSlider = styled(motion.div)`
+position:relative;
+top: 70px;
+`
+
+const UpcomingRow = styled(motion.div)`
+display: grid;
+grid-template-columns: repeat(6,1fr);
+gap: 5px;
+position:absolute;
+width:100%;
+`;
+const UpcomingBox = styled(motion.div)<{bgphoto:string}>`
+background-color: white;
+background-image: url(${(props) => props.bgphoto});
+height: 20em;
+color:red;
+background-size: cover;
+background-position: center center;
+cursor: pointer;
+&:first-child{
+    transform-origin: center left;
+};
+&:last-child{
+    transform-origin: center right;
+};
+`;
 
 function Home(){
 const offset = 6;
@@ -291,18 +365,25 @@ const navigate  = useNavigate();
 const Now_Playing_MovieMatch = useMatch("/movies/:movieId");
 //console.log(Now_Playing_MovieMatch)
 const Popular_MovieMatch = useMatch("/movies/popular/:movieId");
-
+const Top_Rated_MovieMatch = useMatch("/movies/top_rated/:movieId")
+const Upcoming_MovieMatch = useMatch("/movies/upcoming/:movieId")
+//console.log(Top_Rated_MovieMatch)
 
 const {scrollY} = useScroll();
 
 
 const {data, isLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies);
-console.log(data, isLoading);
+//console.log(data, isLoading);
 
 
 const {data:popularData, isLoading:popularLoading} = useQuery<IGetMoviesResult>(
     ["movies", "popular"], getPopularMovies);  
 //console.log(popularData, popularLoading);
+
+const {data:topRatedData} = useQuery<IGetMoviesResult>(["movies", "latest"], getTop_RatedMovies);
+//console.log(topRatedData)
+const {data:upcomingData} = useQuery<IGetMoviesResult>(["movies", "upcoming"], getUpcomingMovies);
+
 
 const id = useParams();
 
@@ -313,6 +394,11 @@ const clickedMovie = Now_Playing_MovieMatch?.params.movieId && data?.results.fin
 const clickedPopularMovie = Popular_MovieMatch?.params.movieId && popularData?.results.find(movie => movie.id+"" === Popular_MovieMatch.params.movieId)
 //console.log(clickedPopularMovie);
 //console.log(Popular_MovieMatch?.params.movieId);
+
+const clickedTopRatedMovie = Top_Rated_MovieMatch?.params.movieId && topRatedData?.results.find(movie => movie.id+"" === Top_Rated_MovieMatch.params.movieId)
+//console.log(clickedTopRatedMovie)
+
+const clickedUpcomingMovie = Upcoming_MovieMatch?.params.movieId && upcomingData?.results.find(movie => movie.id+"" === Upcoming_MovieMatch.params.movieId)
 
 const movieId = Number(id.movieId);
 //console.log(movieId)
@@ -336,7 +422,8 @@ const {data:detailPopular_Video, isLoading:detailPopular_loading} = useQuery<IMo
 const [index,setIndex] = useState(0);
 const [leaving, setLeaving] = useState(false);
 const [popindex,setpopIndex] = useState(0);
-
+const [topRatedIndex, setpopRatedIndex] = useState(0);
+const [upcomingindex, setUpcomingIndex] = useState(0);
 //--------------------------------------------------------------------
 
 
@@ -361,6 +448,26 @@ const popularIndex = () => {
         }
 }
 
+const ratedIndex = () => {
+    if(topRatedData){
+        if(leaving) return;
+        toggleLeaving();
+        const totalMovies = topRatedData?.results.length - 1;
+        const maxIndex = Math.floor(totalMovies/offset) - 1;
+        setpopRatedIndex(current => current === maxIndex ? 0 : current+1)
+        }
+}
+
+const upcomingIndex = () => {
+    if(upcomingData){
+        if(leaving) return;
+        toggleLeaving();
+        const totalMovies = upcomingData?.results.length - 1;
+        const maxIndex = Math.floor(totalMovies/offset) - 1;
+        setUpcomingIndex(current => current === maxIndex ? 0 : current+1)
+        }
+}
+
 const toggleLeaving = () => {
     setLeaving(current => !current);
 };
@@ -375,6 +482,14 @@ navigate(`/movies/${movieId}`)
 const Popular_BoxCliked = (movieId:number) => {
     navigate(`/movies/popular/${movieId}`)
     }
+
+const Top_Rated_BoxClicked = (movieId:number) => {
+    navigate(`/movies/top_rated/${movieId}`)
+}
+
+const Upcoming_BoxClicked = (movieId:number) => {
+    navigate(`/movies/upcoming/${movieId}`)
+}
 
 //--------------------------------------------------------------------
 
@@ -549,6 +664,8 @@ navigate(-1);
             </AnimatePresence>
         </PopularSlider>
 
+
+
     <AnimatePresence>
             {Popular_MovieMatch ? (<>
             <Overlay
@@ -592,6 +709,188 @@ navigate(-1);
          : <UnpreparedPreview>Preview is coming soon...</UnpreparedPreview> }
 
         {clickedPopularMovie.overview !== "" ? <BigOverview>{clickedPopularMovie.overview}</BigOverview>
+            : <UnpreparedOverview>OverView is coming soon...</UnpreparedOverview>
+        }
+        </>}
+            </BigMovie>
+           </>) : null}
+        </AnimatePresence>
+
+
+     <ThirdSlider onClick={ratedIndex}>Latest Movies</ThirdSlider>
+            <TopRatedSlider>
+            <AnimatePresence 
+            initial={false}
+            onExitComplete={toggleLeaving}
+            >
+           
+            <TopRatedRow variants={rowVars}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{type:"tween", duration: 1}}
+            key={topRatedIndex}>
+            {topRatedData?.results.slice(1)
+            .slice(offset*topRatedIndex, offset*topRatedIndex+offset)
+            .map((movie)=>
+            <TopRatedBox 
+            layoutId={movie.id+""}
+            onClick={() => Top_Rated_BoxClicked(movie.id)}
+            variants={boxVars}
+            initial="normal"
+            key={movie.id}
+            whileHover="hover"
+            transition={{type: "tween"}}
+            bgphoto={
+                makeImagePath(movie.poster_path, "w500")}
+            > 
+   
+            <Info variants={infoVars}><h4>{movie.title}</h4>
+            </Info>
+            
+            </TopRatedBox>
+            
+            )}
+            
+
+            </TopRatedRow>
+            </AnimatePresence>
+        </TopRatedSlider>
+
+     <AnimatePresence>
+            {clickedTopRatedMovie ? (<>
+            <Overlay
+            onClick={onOverlayClick}
+            animate={{opacity: 1}}
+            exit={{
+                opacity: 0
+            }}
+            />
+            <BigMovie
+               variants={bigmovieVars}
+               whileInView="hover"
+            style={{top:scrollY.get()-120, bottom: scrollY.get()+10}}
+            layoutId={Top_Rated_MovieMatch.params.movieId}>
+            {clickedTopRatedMovie && 
+            <>
+            <BigCover
+             style={{
+        backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
+        clickedTopRatedMovie.backdrop_path,
+        "w500")})`,}} />
+            <BigTitle>{clickedTopRatedMovie.title}</BigTitle>
+            <h2 style={{padding: "10px",marginLeft: "7%"}}>Release_Date:</h2>
+            <BigDate>{clickedTopRatedMovie.release_date}</BigDate>
+            <h2 style={{padding: "10px",marginLeft: "7%"}}>Vote_Average:</h2>
+        <BigVote>{clickedTopRatedMovie.vote_average}</BigVote>
+        { detailNow_Video?.results.length !== 0 ? 
+        <BigVideo>
+         <ReactPlayer
+         url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
+         className="react-player"
+         width="30vw"
+         height="60vh"
+         playing={true}
+         muted={false}
+         controls={true}
+         light={true}
+         sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation allow-presentation"
+         />
+         </BigVideo>
+         : <UnpreparedPreview>Preview is coming soon...</UnpreparedPreview> }
+
+        {clickedTopRatedMovie.overview !== "" ? <BigOverview>{clickedTopRatedMovie.overview}</BigOverview>
+            : <UnpreparedOverview>OverView is coming soon...</UnpreparedOverview>
+        }
+        </>}
+            </BigMovie>
+           </>) : null}
+        </AnimatePresence>
+    
+        <FourthSlider onClick={upcomingIndex}>Upcoming Movies</FourthSlider>
+
+            <UpcomingSlider>
+            <AnimatePresence 
+            initial={false}
+            onExitComplete={toggleLeaving}
+            >
+           
+            <UpcomingRow variants={rowVars}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{type:"tween", duration: 1}}
+            key={upcomingindex}>
+            {upcomingData?.results.slice(1)
+            .slice(offset*upcomingindex, offset*upcomingindex+offset)
+            .map((movie)=>
+            <UpcomingBox 
+            layoutId={movie.id+""}
+            onClick={() => Upcoming_BoxClicked(movie.id)}
+            variants={boxVars}
+            initial="normal"
+            key={movie.id}
+            whileHover="hover"
+            transition={{type: "tween"}}
+            bgphoto={
+                makeImagePath(movie.poster_path, "w500")}
+            > 
+   
+            <Info variants={infoVars}><h4>{movie.title}</h4>
+            </Info>
+            
+            </UpcomingBox>
+            
+            )}
+            
+
+            </UpcomingRow>
+            </AnimatePresence>
+        </UpcomingSlider>
+
+     <AnimatePresence>
+            {clickedUpcomingMovie ? (<>
+            <Overlay
+            onClick={onOverlayClick}
+            animate={{opacity: 1}}
+            exit={{
+                opacity: 0
+            }}
+            />
+            <BigMovie
+               variants={bigmovieVars}
+               whileInView="hover"
+            style={{top:scrollY.get()-120, bottom: scrollY.get()+10}}
+            layoutId={Upcoming_MovieMatch.params.movieId}>
+            {clickedUpcomingMovie && 
+            <>
+            <BigCover
+             style={{
+        backgroundImage: `linear-gradient(to top,black, transparent), url(${makeImagePath(
+        clickedUpcomingMovie.backdrop_path,
+        "w500")})`,}} />
+            <BigTitle>{clickedUpcomingMovie.title}</BigTitle>
+            <h2 style={{padding: "10px",marginLeft: "7%"}}>Release_Date:</h2>
+            <BigDate>{clickedUpcomingMovie.release_date}</BigDate>
+            <h2 style={{padding: "10px",marginLeft: "7%"}}>Vote_Average:</h2>
+        <BigVote>{clickedUpcomingMovie.vote_average}</BigVote>
+        { detailNow_Video?.results.length !== 0 ? 
+        <BigVideo>
+         <ReactPlayer
+         url={`https://www.youtube.com/watch?v=${detailNow_Video?.results[0].key}`}
+         className="react-player"
+         width="30vw"
+         height="60vh"
+         playing={true}
+         muted={false}
+         controls={true}
+         light={true}
+         sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation allow-presentation"
+         />
+         </BigVideo>
+         : <UnpreparedPreview>Preview is coming soon...</UnpreparedPreview> }
+
+        {clickedUpcomingMovie.overview !== "" ? <BigOverview>{clickedUpcomingMovie.overview}</BigOverview>
             : <UnpreparedOverview>OverView is coming soon...</UnpreparedOverview>
         }
         </>}

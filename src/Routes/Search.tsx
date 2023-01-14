@@ -9,8 +9,7 @@ import { useState } from "react";
 import {useMatch, useNavigate, useParams } from "react-router-dom";
 import { makeImagePath } from "../untills";
 import ReactPlayer from "react-player";
-import { click } from "@testing-library/user-event/dist/click";
-
+import {Helmet} from "react-helmet";
 
 const Wrapper = styled.div`
 background: black;
@@ -25,16 +24,13 @@ justift-content:center;
 align-items: center;
 `;
 
+// --------------------------------------------------------------------------
+
+
 
 const MovieSearchSlider = styled(motion.div)`
 position:relative;
 top: 100px;
-`;
-
-const TvSearchHead = styled(motion.h1)`
-position: relative;
-font-size: 5em;
-top: 1500px;
 `;
 
 const TvSearchSlider = styled(motion.div)`
@@ -42,11 +38,28 @@ position: relative;
 top: 1700px;
 `;
 
+const MovieSearchHead = styled(motion.h1)`
+position: absolute;
+font-size: 5em;
+top: 20%;
+
+cursor: pointer
+`;
+
+const TvSearchHead = styled(motion.h1)`
+position: absolute;
+font-size: 5em;
+top: 1000px;
+cursor: pointer
+`;
+
 const Row = styled(motion.div)`
 display: grid;
 grid-template-columns: repeat(6,1fr);
 gap: 10px;
 position:absolute;
+margin-top: 10%;
+top: 100px;
 width:100%;
 height: 100%;
 `;
@@ -56,6 +69,7 @@ background-color: white;
 background-image: url(${(props) => props.bgphoto});
 height: 300px;
 color:red;
+margin-top: 20%;
 background-size: cover;
 background-position: center center;
 cursor: pointer;
@@ -65,8 +79,24 @@ cursor: pointer;
 &:last-child{
     transform-origin: center right;
 };
-`;
 
+`;
+const TvBox = styled(motion.div)<{bgphoto:string}>`
+background-color: white;
+background-image: url(${(props) => props.bgphoto});
+height: 300px;
+margin-top: -200%;
+background-size: cover;
+background-position: center center;
+cursor: pointer;
+&:first-child{
+    transform-origin: center left;
+};
+&:last-child{
+    transform-origin: center right;
+};
+
+`;
 const Info = styled(motion.div)`
 padding: 10px;
 background-color: ${(props) => props.theme.black.lighter};
@@ -227,6 +257,9 @@ const bigmovieVars = {
 
 
 function Search(){
+    
+const offset = 6;
+
 const location = useLocation();
 //console.log(location)
 
@@ -236,6 +269,11 @@ const {scrollY} = useScroll();
 const keyword = new URLSearchParams(location.search).get("keyword");
 //console.log(keyword);
 
+const Search_MovieMatch = useMatch("/search/movie/:movieId");
+//console.log(Search_MovieMatch) 
+ 
+const Search_TvMatch = useMatch("/search/tv/:tvId");
+//console.log(Search_TvMatch);
 const id = useParams();
 //console.log(id)
 
@@ -244,7 +282,7 @@ const tvId = Number(id.tvId);
 
 
 const {data:search_Movie, isLoading} = useQuery<ISearchMovie>(["movies" ,"search"], ()=>Search_Movies(keyword+""), {enabled: !!keyword})
-//console.log(search_Movie);
+console.log(search_Movie);
 
 const {data:search_Tv} = useQuery<ISearchTv>(["tvs", "search"], ()=>Search_Tvs(keyword+""), {enabled: !!keyword})
 
@@ -255,21 +293,6 @@ const {data:detailNow_Video, isLoading:detailNow_loading} = useQuery<IMovieDetai
 {enabled: !!movieId} 
 );
 
-
-const Search_MovieMatch = useMatch("/search/movie/:movieId");
-//console.log(Search_MovieMatch) 
- 
-const Search_TvMatch = useMatch("/search/tv/:tvId");
-//console.log(Search_TvMatch);
-
-
-
-const Search_MovieClicked = (keyword:string, movieId:number) => {
-    navigate(`/search/movie/${movieId}/?keyword=${keyword}`);
-}
-const Search_TvClicked = (keyword:string, tvId:number) => {
-    navigate(`/search/tv/${tvId}/?keyword=${keyword}`);
-}
 
 
 
@@ -284,34 +307,76 @@ const clickedTv = Search_TvMatch?.params.tvId && search_Tv?.results.find(tv => t
 // clickedTv 부분 만들기
 
 
+// ------------------------------------------------------------------
+
+const [searchMovieindex,setSearchMovieIndex] = useState(0);
+const [leaving, setLeaving] = useState(false);
+const [searchTvindex,setSearchTvIndex] = useState(0);
+
+// ------------------------------------------------------------------
+
+
+const SearchMovieIndex = () => {
+    if(search_Movie){
+    if(leaving) return; //  return;함으로써 애니메이션이 움직이는 걸 막는다
+    toggleLeaving();
+    const totalMovies = search_Movie?.results.length - 1;
+    const maxIndex = Math.floor(totalMovies/offset) - 1;
+    setSearchMovieIndex(current => current === maxIndex ? 0 : current+1)
+    }
+};
+
+const SearchTvIndex = () => {
+    if(search_Tv){
+    if(leaving) return; //  return;함으로써 애니메이션이 움직이는 걸 막는다
+    toggleLeaving();
+    const totalMovies = search_Tv?.results.length - 1;
+    const maxIndex = Math.floor(totalMovies/offset) - 1;
+    setSearchTvIndex(current => current === maxIndex ? 0 : current+1)
+    }
+};
+
+const toggleLeaving = () => {
+    setLeaving(current => !current);
+};
+
+
+const Search_MovieClicked = (keyword:string, movieId:number) => {
+    navigate(`/search/movie/${movieId}/?keyword=${keyword}`);
+}
+const Search_TvClicked = (keyword:string, tvId:number) => {
+    navigate(`/search/tv/${tvId}/?keyword=${keyword}`);
+}
+
 const onOverlayClick = () => {
     navigate(-1);
 }
 
-// ------------------------------------------------------------------
-
-const [index,setIndex] = useState(0);
-// ------------------------------------------------------------------
-
-
-
     return (
         <Wrapper>
+    <Helmet>  
+    <title>NETFLIX</title>
+    <link rel="icon" href="https://play-lh.googleusercontent.com/TBRwjS_qfJCSj1m7zZB93FnpJM5fSpMA_wUlFDLxWAb45T9RmwBvQd5cWR5viJJOhkI" />
+    </Helmet>
                  {isLoading ? 
         <Loader>Loading...</Loader> 
         :
         <>
+        <MovieSearchHead onClick={SearchMovieIndex}>Movies</MovieSearchHead>
       <MovieSearchSlider>
-                <AnimatePresence>
+                <AnimatePresence
+                   initial={false}
+                   onExitComplete={toggleLeaving}
+                >
                 <Row
                 variants={rowVars}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
                 transition={{type:"tween", duration: 1}}
-                key={index}
+                key={searchMovieindex}
                 >
-                {search_Movie?.results.filter((movie) => movie.poster_path !== null).map((movie) => 
+                {search_Movie?.results.filter((movie) => movie.poster_path !== null).slice(offset*searchMovieindex, offset*searchMovieindex+offset).map((movie) => 
                <Box
                 onClick={()=>Search_MovieClicked(keyword+"", movie.id)}
                 variants={boxVars}
@@ -330,41 +395,7 @@ const [index,setIndex] = useState(0);
                 </AnimatePresence>
             </MovieSearchSlider>
 
-
-
-               <TvSearchHead>Tv Show</TvSearchHead>
-            <TvSearchSlider>
             <AnimatePresence>
-                <Row
-                variants={rowVars}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                transition={{type:"tween", duration: 1}}
-                key={index}
-                >
-                {search_Tv?.results.filter((movie) => movie.poster_path !== null).map((movie) => 
-               <Box
-                onClick={()=>Search_TvClicked(keyword+"", movie.id)}
-                variants={boxVars}
-                initial="initial"
-                whileHover="hover"
-                transition={{type: "tween"}}
-                key={movie.id} 
-                bgphoto={makeImagePath(movie.poster_path, "w500")}>
-                    <Info variants={infoVars}><h4>{movie.name}</h4></Info>
-                </Box>)
-                }
-
-                {search_Tv?.results.length === 0 ? <NotFound>NOT FOUND</NotFound>:null}
-                </Row>
-
-                </AnimatePresence>
-            </TvSearchSlider>
-
-
-
-         <AnimatePresence>
                 {Search_MovieMatch ? (<>
                 <Overlay
                 animate={{opacity: 1}}
@@ -375,7 +406,7 @@ const [index,setIndex] = useState(0);
                 <BigMovie
                 variants={bigmovieVars}
                 whileHover="hover"
-                style={{top:scrollY.get()+80, bottom: scrollY.get()+10}}
+                style={{top:scrollY.get()-120, bottom: scrollY.get()+10}}
                 >
                 {clickedMovie && 
                 <>
@@ -415,6 +446,43 @@ const [index,setIndex] = useState(0);
                 </>):null}
                 </AnimatePresence>
         </>}
+  
+
+               <TvSearchHead onClick={SearchTvIndex}>Tv Show</TvSearchHead>
+            <TvSearchSlider>
+            <AnimatePresence
+               initial={false}
+               onExitComplete={toggleLeaving}
+            >
+                <Row
+                variants={rowVars}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{type:"tween", duration: 1}}
+                key={searchTvindex}
+                >
+                {search_Tv?.results.filter((movie) => movie.backdrop_path !== null).slice(offset*searchTvindex, offset*searchTvindex+offset).map((movie) => 
+               <TvBox
+                onClick={()=>Search_TvClicked(keyword+"", movie.id)}
+                variants={boxVars}
+                initial="initial"
+                whileHover="hover"
+                transition={{type: "tween"}}
+                key={movie.id} 
+                bgphoto={makeImagePath(movie.poster_path, "w500")}>
+                    <Info variants={infoVars}><h4>{movie.name}</h4></Info>
+                </TvBox>)
+                }
+
+                {search_Tv?.results.length === 0 ? <NotFound>NOT FOUND</NotFound>:null}
+                </Row>
+
+                </AnimatePresence>
+            </TvSearchSlider>
+
+
+
             
 
         <AnimatePresence>
@@ -428,7 +496,7 @@ const [index,setIndex] = useState(0);
                 <BigMovie
                 variants={bigmovieVars}
                 whileHover="hover"
-                style={{top:scrollY.get()+80, bottom: scrollY.get()+10}}
+                style={{top:scrollY.get()-120, bottom: scrollY.get()+10}}
                 >
                 {clickedTv && 
                 <>
